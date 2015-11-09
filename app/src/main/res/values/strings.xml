@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">FutureClock</string>
-    <string name="ok_button">OK</string>
-    <string name="voice_button">Play</string>
+
+    <string name="ok_button_text">OK</string>
+    <string name="voice_button_text">Play</string>
+    <string name="alarm_button_text">Add</string>
+
+    <string name="item_alarm_active_checkbox">Active</string>
 </resources>

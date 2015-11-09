@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock;
+package com.mariotti.developer.futureclock.model;
 
 import com.google.gson.annotations.SerializedName;
 

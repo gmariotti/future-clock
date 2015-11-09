@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/list_item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="00:00"/>
+
+    <TextView
+        android:id="@+id/list_item_days"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Mon, Tue, Wed"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/item_alarm_active_checkbox"
+            android:id="@+id/active_checkbox"
+            />
+    </LinearLayout>
+
+</LinearLayout>
