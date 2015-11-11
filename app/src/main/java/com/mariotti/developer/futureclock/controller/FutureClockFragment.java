@@ -131,9 +131,16 @@ public class FutureClockFragment extends Fragment {
             mActiveCheckBox = (CheckBox) itemView.findViewById(R.id.active_checkbox);
         }
 
-        public void bindAlarm(Alarm alarm) {
+        public void bindAlarm(final Alarm alarm) {
             mAlarm = alarm;
             mTimeTextView.setText(mAlarm.getTime());
+            mTimeTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = AlarmActivity.newIntent(getActivity(), alarm.getUUID());
+                    startActivityForResult(intent, REQUEST_CODE);
+                }
+            });
             mDaysTextView.setText(mAlarm.getDaysString());
             mActiveCheckBox.setChecked(mAlarm.isActive());
 

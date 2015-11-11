@@ -1,9 +1,13 @@
 package com.mariotti.developer.futureclock.model;
 
+import android.util.Log;
+
 import java.util.EnumSet;
 import java.util.UUID;
 
 public class Alarm {
+    private static final String TAG = "Alarm";
+
     private UUID mUUID;
     private int mHour;
     private int mMinute;
@@ -63,6 +67,42 @@ public class Alarm {
         return result;
     }
 
+    public void addDay(WeekDay day) {
+        if (mDays.add(day)) {
+            Log.d(TAG, "Day added " + day.getShortString());
+        }
+    }
+
+    public void removeDay(WeekDay day) {
+        if (mDays.remove(day)) {
+            Log.d(TAG, "Day removed " + day.getShortString());
+        }
+
+    }
+
+    public boolean hasMonday() {
+        return mDays.contains(WeekDay.MONDAY);
+    }
+
+    public boolean hasTuesday() {
+        return mDays.contains(WeekDay.TUESDAY);
+    }
+    public boolean hasWednesday() {
+        return mDays.contains(WeekDay.WEDNESDAY);
+    }
+    public boolean hasThursday() {
+        return mDays.contains(WeekDay.THURSDAY);
+    }
+    public boolean hasFriday() {
+        return mDays.contains(WeekDay.FRIDAY);
+    }
+    public boolean hasSaturday() {
+        return mDays.contains(WeekDay.SATURDAY);
+    }
+    public boolean hasSunday() {
+        return mDays.contains(WeekDay.SUNDAY);
+    }
+
     /**
      * Get UUID
      * @return UUID
@@ -79,12 +119,20 @@ public class Alarm {
         return mHour;
     }
 
+    public void setHour(int hour) {
+        mHour = hour;
+    }
+
     /**
      * Get the minute
      * @return minute
      */
     public int getMinute() {
         return mMinute;
+    }
+
+    public void setMinute(int minute) {
+        mMinute = minute;
     }
 
     /**
@@ -101,5 +149,9 @@ public class Alarm {
      */
     public boolean isActive() {
         return mActive;
+    }
+
+    public void setActive(boolean active) {
+        mActive = active;
     }
 }

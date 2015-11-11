@@ -3,8 +3,8 @@ package com.mariotti.developer.futureclock.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+
+import com.mariotti.developer.futureclock.controller.AlarmFragment;
 
 import java.util.UUID;
 
