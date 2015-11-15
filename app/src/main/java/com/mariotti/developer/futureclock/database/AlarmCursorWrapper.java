@@ -28,27 +28,14 @@ public class AlarmCursorWrapper extends CursorWrapper {
         int minute = Integer.parseInt(timeSplit[1]);
 
         EnumSet<WeekDay> days = EnumSet.noneOf(WeekDay.class);
-        if (getInt(getColumnIndex(AlarmTable.Cols.MONDAY)) == 1) {
-            days.add(WeekDay.MONDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.TUESDAY)) == 1) {
-            days.add(WeekDay.TUESDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.WEDNESDAY)) == 1) {
-            days.add(WeekDay.WEDNESDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.THURSDAY)) == 1) {
-            days.add(WeekDay.THURSDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.FRIDAY)) == 1) {
-            days.add(WeekDay.FRIDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.SATURDAY)) == 1) {
-            days.add(WeekDay.SATURDAY);
-        }
-        if (getInt(getColumnIndex(AlarmTable.Cols.SUNDAY)) == 1) {
-            days.add(WeekDay.MONDAY);
-        }
+        addDay(days, AlarmTable.Cols.MONDAY, WeekDay.MONDAY);
+        addDay(days, AlarmTable.Cols.TUESDAY, WeekDay.TUESDAY);
+        addDay(days, AlarmTable.Cols.WEDNESDAY, WeekDay.WEDNESDAY);
+        addDay(days, AlarmTable.Cols.THURSDAY, WeekDay.THURSDAY);
+        addDay(days, AlarmTable.Cols.FRIDAY, WeekDay.FRIDAY);
+        addDay(days, AlarmTable.Cols.SATURDAY, WeekDay.SATURDAY);
+        addDay(days, AlarmTable.Cols.SUNDAY, WeekDay.SUNDAY);
+
         int active = getInt(getColumnIndex(AlarmTable.Cols.ACTIVE));
 
         Alarm alarm = new Alarm(
@@ -59,5 +46,11 @@ public class AlarmCursorWrapper extends CursorWrapper {
         );
 
         return alarm;
+    }
+
+    private void addDay(EnumSet<WeekDay> days, String columnName, WeekDay day) {
+        if (getInt(getColumnIndex(columnName)) == 1) {
+            days.add(day);
+        }
     }
 }

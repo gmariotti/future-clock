@@ -59,97 +59,13 @@ public class AlarmFragment extends Fragment {
             mAlarm = new Alarm();
         }
 
-        mMondayTextView = (TextView) view.findViewById(R.id.alarm_textview_mon);
-        mMondayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mMondayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mMondayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.MONDAY);
-                } else {
-                    mMondayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.MONDAY);
-                }
-            }
-        });
-        mTuesdayTextView = (TextView) view.findViewById(R.id.alarm_textview_tue);
-        mTuesdayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mTuesdayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mTuesdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.TUESDAY);
-                } else {
-                    mTuesdayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.TUESDAY);
-                }
-            }
-        });
-        mWednesdayTextView = (TextView) view.findViewById(R.id.alarm_textview_wed);
-        mWednesdayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mWednesdayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mWednesdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.WEDNESDAY);
-                } else {
-                    mWednesdayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.WEDNESDAY);
-                }
-            }
-        });
-        mThursdayTextView = (TextView) view.findViewById(R.id.alarm_textview_thu);
-        mThursdayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mThursdayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mThursdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.THURSDAY);
-                } else {
-                    mThursdayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.THURSDAY);
-                }
-            }
-        });
-        mFridayTextView = (TextView) view.findViewById(R.id.alarm_textview_fri);
-        mFridayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mFridayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mFridayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.FRIDAY);
-                } else {
-                    mFridayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.FRIDAY);
-                }
-            }
-        });
-        mSaturdayTextView = (TextView) view.findViewById(R.id.alarm_textview_sat);
-        mSaturdayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSaturdayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mSaturdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.SATURDAY);
-                } else {
-                    mSaturdayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.SATURDAY);
-                }
-            }
-        });
-        mSundayTextView = (TextView) view.findViewById(R.id.alarm_textview_sun);
-        mSundayTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSundayTextView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                    mSundayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    mAlarm.addDay(WeekDay.SUNDAY);
-                } else {
-                    mSundayTextView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(WeekDay.SUNDAY);
-                }
-            }
-        });
+        mMondayTextView = initializeDayTextView(view, R.id.alarm_textview_mon, WeekDay.MONDAY);
+        mTuesdayTextView = initializeDayTextView(view, R.id.alarm_textview_tue, WeekDay.TUESDAY);
+        mWednesdayTextView = initializeDayTextView(view, R.id.alarm_textview_wed, WeekDay.WEDNESDAY);
+        mThursdayTextView = initializeDayTextView(view, R.id.alarm_textview_thu, WeekDay.THURSDAY);
+        mFridayTextView = initializeDayTextView(view, R.id.alarm_textview_fri, WeekDay.FRIDAY);
+        mSaturdayTextView = initializeDayTextView(view, R.id.alarm_textview_sat, WeekDay.SATURDAY);
+        mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.SUNDAY);
         setDaysSelected();
 
         // works only for API 23
@@ -157,38 +73,41 @@ public class AlarmFragment extends Fragment {
         mTimePicker.setIs24HourView(true);
         mTimePicker.setHour(mAlarm.getHour());
         mTimePicker.setMinute(mAlarm.getMinute());
-        mTimePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
-            @Override
-            public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-                mAlarm.setHour(hourOfDay);
-                mAlarm.setMinute(minute);
-            }
+        mTimePicker.setOnTimeChangedListener((timePicker, hourOfDay, minute) -> {
+            mAlarm.setHour(hourOfDay);
+            mAlarm.setMinute(minute);
         });
 
         mSwitch = (Switch) view.findViewById(R.id.alarm_switch);
         mSwitch.setChecked(mAlarm.isActive());
-        mSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAlarm.setActive(mSwitch.isChecked());
-            }
-        });
+        mSwitch.setOnClickListener(v -> mAlarm.setActive(mSwitch.isChecked()));
 
         mConfirmButton = (Button) view.findViewById(R.id.alarm_confirm_button);
-        mConfirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (alarmUuid == null) {
-                    AlarmController.getAlarmController(getActivity()).addAlarm(mAlarm);
-                } else {
-                    AlarmController.getAlarmController(getActivity()).updateAlarm(mAlarm);
-                }
-                getActivity().setResult(Activity.RESULT_OK);
-                getActivity().finish();
+        mConfirmButton.setOnClickListener(v -> {
+            if (alarmUuid == null) {
+                AlarmController.getAlarmController(getActivity()).addAlarm(mAlarm);
+            } else {
+                AlarmController.getAlarmController(getActivity()).updateAlarm(mAlarm);
             }
+            getActivity().setResult(Activity.RESULT_OK);
+            getActivity().finish();
         });
 
         return view;
+    }
+
+    private TextView initializeDayTextView(View view, int idTextView, final WeekDay day) {
+        final TextView textView = (TextView) view.findViewById(idTextView);
+        textView.setOnClickListener(v -> {
+            if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
+                textView.setTextColor(getResources().getColor(R.color.red, null));
+                mAlarm.addDay(day);
+            } else {
+                textView.setTextColor(getResources().getColor(R.color.grey, null));
+                mAlarm.removeDay(day);
+            }
+        });
+        return textView;
     }
 
     private void setDaysSelected() {

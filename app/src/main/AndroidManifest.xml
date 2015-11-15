@@ -19,6 +19,8 @@
         </activity>
         <activity android:name=".activities.AlarmActivity" >
         </activity>
+        <activity android:name=".activities.AlarmFiredActivity" >
+        </activity>
     </application>
 
 </manifest>

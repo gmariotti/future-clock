@@ -10,8 +10,11 @@ import com.mariotti.developer.futureclock.database.AlarmCursorWrapper;
 import com.mariotti.developer.futureclock.database.AlarmDbSchema;
 import com.mariotti.developer.futureclock.database.AlarmDbSchema.AlarmTable;
 import com.mariotti.developer.futureclock.model.Alarm;
+import com.mariotti.developer.futureclock.model.WeekDay;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -110,6 +113,37 @@ public class AlarmController {
         } finally {
             cursorWrapper.close();
         }
+    }
+
+    /**
+     * Check the database for all enabled alarms and get it.
+     * Then check the first alarm in time that will be fired
+     * @return the next alarm to fire, or null if not found
+     */
+    public Alarm getNextAlarm() {
+        // get current day
+        Calendar today = Calendar.getInstance();
+        int day = today.get(Calendar.DAY_OF_WEEK);
+        int hour = today.get(Calendar.HOUR_OF_DAY);
+        int minute = today.get(Calendar.MINUTE);
+
+        // TODO
+        List<Alarm> alarms = getAlarms();
+        if (!alarms.isEmpty()) {
+            Alarm nextAlarm = new Alarm(null, hour, minute, null, false);
+            for (Alarm alarm : alarms) {
+                EnumSet<WeekDay> days = alarm.getDays();
+                // days is empty if the alarm is set for a single time and stop
+                if (days.isEmpty()) {
+                    if (nextAlarm.getHour() < alarm.getHour() ||
+                            (hour == alarm.getHour() && minute < alarm.getMinute())) {
+
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public void updateAlarm(Alarm alarm) {

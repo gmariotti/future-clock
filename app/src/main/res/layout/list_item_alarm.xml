@@ -11,23 +11,16 @@
         android:layout_height="wrap_content"
         tools:text="00:00"/>
 
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item_switch"
+        android:layout_gravity="right" />
+
     <TextView
         android:id="@+id/list_item_days"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="Mon, Tue, Wed"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/item_alarm_active_checkbox"
-            android:id="@+id/active_checkbox"
-            />
-    </LinearLayout>
 
 </LinearLayout>

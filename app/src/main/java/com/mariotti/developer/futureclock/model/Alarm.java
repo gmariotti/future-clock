@@ -5,6 +5,8 @@ import android.util.Log;
 import java.util.EnumSet;
 import java.util.UUID;
 
+import static com.mariotti.developer.futureclock.model.WeekDay.*;
+
 public class Alarm {
     private static final String TAG = "Alarm";
 
@@ -59,8 +61,14 @@ public class Alarm {
 
         if (!mDays.isEmpty()) {
             result = "";
+            int counter = 0;
             for (WeekDay day : mDays) {
-                result += day.getShortString();
+                if (counter != 0) {
+                    result += ", ";
+                } else {
+                    counter = 1;
+                }
+                result += day.getShortName();
             }
         }
 
@@ -69,38 +77,38 @@ public class Alarm {
 
     public void addDay(WeekDay day) {
         if (mDays.add(day)) {
-            Log.d(TAG, "Day added " + day.getShortString());
+            Log.d(TAG, "Day added " + day.getShortName());
         }
     }
 
     public void removeDay(WeekDay day) {
         if (mDays.remove(day)) {
-            Log.d(TAG, "Day removed " + day.getShortString());
+            Log.d(TAG, "Day removed " + day.getShortName());
         }
 
     }
 
     public boolean hasMonday() {
-        return mDays.contains(WeekDay.MONDAY);
+        return mDays.contains(MONDAY);
     }
 
     public boolean hasTuesday() {
-        return mDays.contains(WeekDay.TUESDAY);
+        return mDays.contains(TUESDAY);
     }
     public boolean hasWednesday() {
-        return mDays.contains(WeekDay.WEDNESDAY);
+        return mDays.contains(WEDNESDAY);
     }
     public boolean hasThursday() {
-        return mDays.contains(WeekDay.THURSDAY);
+        return mDays.contains(THURSDAY);
     }
     public boolean hasFriday() {
-        return mDays.contains(WeekDay.FRIDAY);
+        return mDays.contains(FRIDAY);
     }
     public boolean hasSaturday() {
-        return mDays.contains(WeekDay.SATURDAY);
+        return mDays.contains(SATURDAY);
     }
     public boolean hasSunday() {
-        return mDays.contains(WeekDay.SUNDAY);
+        return mDays.contains(SUNDAY);
     }
 
     /**

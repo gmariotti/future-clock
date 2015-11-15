@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -21,30 +22,43 @@
             android:id="@+id/ok_button"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="@string/ok_button_text"/>
+            android:text="@string/ok_button_text" />
 
         <Button
             android:id="@+id/voice_button"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="@string/voice_button_text"/>
+            android:text="@string/voice_button_text" />
 
         <TextView
             android:id="@+id/current_weather_text"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            tools:text="Current weather"
-            android:gravity="center" />
-
-        <Button
-            android:id="@+id/alarm_button"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/alarm_button_text"/>
+            android:gravity="center"
+            tools:text="Current weather" />
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/alarms_recycler_view"
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/alarms_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/alarm_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_add_black"
+            app:elevation="6dp"
+            app:fabSize="normal"
+            app:layout_anchor="@id/alarms_recycler_view"
+            app:layout_anchorGravity="bottom|right|end"
+            app:pressedTranslationZ="12dp"
+            />
+    </android.support.design.widget.CoordinatorLayout>
 </LinearLayout>

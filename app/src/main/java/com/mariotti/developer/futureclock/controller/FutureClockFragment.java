@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,16 +15,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.activities.AlarmActivity;
+import com.mariotti.developer.futureclock.activities.AlarmFiredActivity;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.OpenMapWeather;
 
 import java.io.IOException;
 import java.util.List;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.schedulers.Schedulers;
+
+import rx.android.schedulers.AndroidSchedulers;
 
 public class FutureClockFragment extends Fragment {
     private static final String TAG = "FutureClockFragment";
@@ -33,7 +41,7 @@ public class FutureClockFragment extends Fragment {
     private Button mVoiceButton;
     private TextView mWeatherText;
 
-    private Button mAlarmButton;
+    private FloatingActionButton mAlarmFab;
     private RecyclerView mAlarmRecyclerView;
     private AlarmAdapter mAdapter;
 
@@ -52,36 +60,56 @@ public class FutureClockFragment extends Fragment {
         mWeatherText = (TextView) view.findViewById(R.id.current_weather_text);
 
         // Part about the alarm list
-        mAlarmButton = (Button) view.findViewById(R.id.alarm_button);
-        mAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = AlarmActivity.newIntent(getActivity(), null);
-                startActivityForResult(intent, REQUEST_CODE);
-            }
+        mAlarmFab = (FloatingActionButton) view.findViewById(R.id.alarm_fab);
+        mAlarmFab.setOnClickListener(v -> {
+            Intent intent = AlarmActivity.newIntent(getActivity(), null);
+            startActivityForResult(intent, REQUEST_CODE);
         });
         mAlarmRecyclerView = (RecyclerView) view.findViewById(R.id.alarms_recycler_view);
         mAlarmRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         // Part about the weather and voice part
-        mOkButton.setOnClickListener(new View.OnClickListener() {
+        mOkButton.setOnClickListener(v -> Observable.create(new Observable.OnSubscribe<OpenMapWeather>() {
+
             @Override
-            public void onClick(View v) {
-                new WeatherAsyncTask().execute();
+            public void call(Subscriber<? super OpenMapWeather> subscriber) {
+                try {
+                    subscriber.onNext(OpenMapWeatherFetchr.parseOpenMapWeather());
+                    subscriber.onCompleted();
+                } catch (IOException e) {
+                    Log.i(TAG, "parseOpenMapWeather error");
+                }
             }
-        });
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<OpenMapWeather>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.i(TAG, "onCompleted");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError");
+                    }
+
+                    @Override
+                    public void onNext(OpenMapWeather openMapWeather) {
+                        mWeatherText.setText(openMapWeather.toString());
+                        mVoiceButton.setEnabled(true);
+                        Log.i(TAG, "onNext");
+                    }
+                }));
 
         mVoiceButton.setOnClickListener(new View.OnClickListener() {
             TextToSpeech mTextToSpeech;
 
             @Override
             public void onClick(View v) {
-                mTextToSpeech = new TextToSpeech(getActivity(), new TextToSpeech.OnInitListener() {
-                    @Override
-                    public void onInit(int status) {
-                        String goodMorning = "Good morning Sir, ";
-                        mTextToSpeech.speak(goodMorning + mWeatherText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
-                    }
+                mTextToSpeech = new TextToSpeech(getActivity(), status -> {
+                    String goodMorning = "Good morning Sir, ";
+                    mTextToSpeech.speak(goodMorning + mWeatherText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
                 });
             }
         });
@@ -114,38 +142,57 @@ public class FutureClockFragment extends Fragment {
             mAdapter.setAlarms(alarms);
             mAdapter.notifyDataSetChanged();
         }
+
+        // check if the alarms list is not empty
+        if (!alarms.isEmpty()) {
+            // get the first alarm valid for the current day
+            Alarm alarm = AlarmController.getAlarmController(getActivity()).getNextAlarm();
+            if (alarm != null) {
+                AlarmFiredActivity.setActivityAlarm(getActivity(), alarm.getUUID());
+            }
+        }
     }
 
-    private class AlarmHolder extends RecyclerView.ViewHolder {
+    private class AlarmHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnLongClickListener {
         private TextView mTimeTextView;
         private TextView mDaysTextView;
-        private CheckBox mActiveCheckBox;
+        private Switch mActiveSwitch;
 
         private Alarm mAlarm;
 
         public AlarmHolder(View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
 
             mTimeTextView = (TextView) itemView.findViewById(R.id.list_item_time);
             mDaysTextView = (TextView) itemView.findViewById(R.id.list_item_days);
-            mActiveCheckBox = (CheckBox) itemView.findViewById(R.id.active_checkbox);
+            mActiveSwitch = (Switch) itemView.findViewById(R.id.list_item_switch);
         }
 
         public void bindAlarm(final Alarm alarm) {
             mAlarm = alarm;
             mTimeTextView.setText(mAlarm.getTime());
-            mTimeTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = AlarmActivity.newIntent(getActivity(), alarm.getUUID());
-                    startActivityForResult(intent, REQUEST_CODE);
-                }
-            });
             mDaysTextView.setText(mAlarm.getDaysString());
-            mActiveCheckBox.setChecked(mAlarm.isActive());
+            mActiveSwitch.setChecked(mAlarm.isActive());
 
             // TODO -> change the value of active in case the checkbox is clicked or not
-            mActiveCheckBox.setEnabled(false);
+            mActiveSwitch.setEnabled(false);
+        }
+
+        @Override
+        public void onClick(View v) {
+            // Update the clicked alarm
+            Intent intent = AlarmActivity.newIntent(getActivity(), mAlarm.getUUID());
+            startActivityForResult(intent, REQUEST_CODE);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            // TODO -> implement alarm deletion
+            Log.i(TAG, "onLongClick event");
+            return false;
         }
     }
 
@@ -177,30 +224,6 @@ public class FutureClockFragment extends Fragment {
 
         public void setAlarms(List<Alarm> alarms) {
             mAlarms = alarms;
-        }
-    }
-
-    private class WeatherAsyncTask extends AsyncTask<Void, Void, Void> {
-        private OpenMapWeather mWeather;
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                mWeather = OpenMapWeatherFetchr.parseOpenMapWeather();
-            } catch (IOException e) {
-                Log.d(TAG, "Error in getting the weather");
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (mWeather != null) {
-                mWeatherText.setText(mWeather.toString());
-                mVoiceButton.setEnabled(true);
-            } else {
-                Log.d(TAG, "mWeather is null");
-            }
         }
     }
 }
