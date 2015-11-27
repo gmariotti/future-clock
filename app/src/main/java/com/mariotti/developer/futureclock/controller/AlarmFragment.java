@@ -66,7 +66,6 @@ public class AlarmFragment extends Fragment {
         mFridayTextView = initializeDayTextView(view, R.id.alarm_textview_fri, WeekDay.FRIDAY);
         mSaturdayTextView = initializeDayTextView(view, R.id.alarm_textview_sat, WeekDay.SATURDAY);
         mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.SUNDAY);
-        setDaysSelected();
 
         // works only for API 23
         mTimePicker = (TimePicker) view.findViewById(R.id.alarm_time_picker);
@@ -100,44 +99,18 @@ public class AlarmFragment extends Fragment {
         final TextView textView = (TextView) view.findViewById(idTextView);
         textView.setOnClickListener(v -> {
             if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                textView.setTextColor(getResources().getColor(R.color.red, null));
+                textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
                 mAlarm.addDay(day);
             } else {
                 textView.setTextColor(getResources().getColor(R.color.grey, null));
                 mAlarm.removeDay(day);
             }
         });
-        return textView;
-    }
 
-    private void setDaysSelected() {
-        EnumSet<WeekDay> enumSet = mAlarm.getDays();
-        for (WeekDay day : enumSet) {
-            switch (day) {
-                case MONDAY:
-                    mMondayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case TUESDAY:
-                    mTuesdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case WEDNESDAY:
-                    mWednesdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case THURSDAY:
-                    mThursdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case FRIDAY:
-                    mFridayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case SATURDAY:
-                    mSaturdayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                case SUNDAY:
-                    mSundayTextView.setTextColor(getResources().getColor(R.color.red, null));
-                    break;
-                default:
-                    break;
-            }
+        if (mAlarm.hasDay(day)) {
+            textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
         }
+
+        return textView;
     }
 }

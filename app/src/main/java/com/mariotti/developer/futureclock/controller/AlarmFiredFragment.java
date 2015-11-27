@@ -24,7 +24,7 @@ public class AlarmFiredFragment extends Fragment {
         args.putSerializable(ARG_UUID, uuid);
         fragment.setArguments(args);
 
-        return new AlarmFiredFragment();
+        return fragment;
     }
 
     @Nullable

@@ -7,14 +7,19 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -49,6 +54,12 @@ public class FutureClockFragment extends Fragment {
         return new FutureClockFragment();
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,7 +88,9 @@ public class FutureClockFragment extends Fragment {
                     subscriber.onNext(OpenMapWeatherFetchr.parseOpenMapWeather());
                     subscriber.onCompleted();
                 } catch (IOException e) {
-                    Log.i(TAG, "parseOpenMapWeather error");
+                    Snackbar.make(view, "Weather Error", Snackbar.LENGTH_LONG)
+                            .setAction("", view -> Log.i(TAG, "parseOpenMapWeather error"))
+                            .show();
                 }
             }
         })
@@ -115,6 +128,7 @@ public class FutureClockFragment extends Fragment {
         });
 
         updateUI();
+        updateNextAlarm();
 
         return view;
     }
@@ -128,6 +142,26 @@ public class FutureClockFragment extends Fragment {
         // if result code is RESULT_OK then an alarm as been updated or added
         if (requestCode == REQUEST_CODE) {
             updateUI();
+            updateNextAlarm();
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.app_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_settings:
+                Snackbar.make(getView(), "Settings", Snackbar.LENGTH_LONG)
+                        .setAction("-> TODO", v -> Log.d(TAG, "Settings Selected"))
+                        .show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -142,9 +176,11 @@ public class FutureClockFragment extends Fragment {
             mAdapter.setAlarms(alarms);
             mAdapter.notifyDataSetChanged();
         }
+    }
 
-        // check if the alarms list is not empty
-        if (!alarms.isEmpty()) {
+    private void updateNextAlarm() {
+        // check if the alarms list of active alarm is not empty
+        if (!AlarmController.getAlarmController(getActivity()).getActiveAlarms().isEmpty()) {
             // get the first alarm valid for the current day
             Alarm alarm = AlarmController.getAlarmController(getActivity()).getNextAlarm();
             if (alarm != null) {
@@ -177,8 +213,11 @@ public class FutureClockFragment extends Fragment {
             mDaysTextView.setText(mAlarm.getDaysString());
             mActiveSwitch.setChecked(mAlarm.isActive());
 
-            // TODO -> change the value of active in case the checkbox is clicked or not
-            mActiveSwitch.setEnabled(false);
+            mActiveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                mAlarm.setActive(isChecked);
+                AlarmController.getAlarmController(getActivity()).updateAlarm(alarm);
+                updateNextAlarm();
+            });
         }
 
         @Override
@@ -190,9 +229,18 @@ public class FutureClockFragment extends Fragment {
 
         @Override
         public boolean onLongClick(View v) {
-            // TODO -> implement alarm deletion
-            Log.i(TAG, "onLongClick event");
-            return false;
+            // TODO -> implement dialog confirmation
+            if (AlarmController.getAlarmController(getActivity()).deleteAlarm(mAlarm.getUUID()) != 1) {
+                Snackbar.make(v, "Error delete alarm", Snackbar.LENGTH_LONG)
+                        .setAction("", view -> {
+                            Log.i(TAG, "onLongClick event");
+                        })
+                        .show();
+            } else {
+                updateUI();
+                updateNextAlarm();
+            }
+            return true;
         }
     }
 

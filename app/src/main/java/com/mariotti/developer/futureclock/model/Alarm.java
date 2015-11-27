@@ -2,6 +2,7 @@ package com.mariotti.developer.futureclock.model;
 
 import android.util.Log;
 
+import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ public class Alarm {
      * @throws IllegalArgumentException if hour and/or minute is a wrong value
      */
     public Alarm(UUID UUID, int hour, int minute, EnumSet<WeekDay> days, boolean active)
-            throws IllegalArgumentException{
+            throws IllegalArgumentException {
         // Throw an exception if an illegal time is inserted
         if (hour > 23 || hour < 0 || minute > 59 || minute < 0) {
             throw new IllegalArgumentException();
@@ -81,6 +82,56 @@ public class Alarm {
         }
     }
 
+    public WeekDay getNearestDay(WeekDay day, int hour, int minute) {
+        if (!mDays.isEmpty()) {
+            if (mDays.contains(day) && (mHour > hour || (mHour == hour && mMinute > minute))) {
+                return day;
+            } else {
+                WeekDay nextDay = WeekDay.next(day);
+                while (!mDays.contains(nextDay)) {
+                    nextDay = WeekDay.next(nextDay);
+                }
+                return nextDay;
+            }
+        } else if(mHour > hour || (mHour == hour && mMinute > minute)) {
+            return day;
+        } else {
+            return WeekDay.next(day);
+        }
+    }
+
+
+    public long getTimeInMillisRespectTo(Calendar calendar) {
+        long time = calendar.getTimeInMillis();
+
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        WeekDay day = WeekDay.getFromInt(calendar.get(Calendar.DAY_OF_WEEK));
+
+        // manage minutes and hours problem
+        if (hour > mHour || (hour == mHour && minute > mMinute)) {
+            // add to time the milliseconds to become a new day
+            time += (60 - minute) * 60 * 1000;
+            time += (23 - hour) * 3600 * 1000;
+            day = next(day);
+        } else {
+            if (minute > mMinute) {
+                hour++;
+                minute = 0;
+            }
+            time += (mHour - hour) * 3600 * 1000;
+            time += (mMinute - minute) * 60 * 1000;
+        }
+
+        // add the time difference based on the day to consider
+        WeekDay nearestDay = getNearestDay(day, hour, minute);
+        int dayDifference = nearestDay.getDayDifference(day);
+
+        time += dayDifference * 24 * 3600 * 1000;
+
+        return time;
+    }
+
     public void removeDay(WeekDay day) {
         if (mDays.remove(day)) {
             Log.d(TAG, "Day removed " + day.getShortName());
@@ -88,27 +139,8 @@ public class Alarm {
 
     }
 
-    public boolean hasMonday() {
-        return mDays.contains(MONDAY);
-    }
-
-    public boolean hasTuesday() {
-        return mDays.contains(TUESDAY);
-    }
-    public boolean hasWednesday() {
-        return mDays.contains(WEDNESDAY);
-    }
-    public boolean hasThursday() {
-        return mDays.contains(THURSDAY);
-    }
-    public boolean hasFriday() {
-        return mDays.contains(FRIDAY);
-    }
-    public boolean hasSaturday() {
-        return mDays.contains(SATURDAY);
-    }
-    public boolean hasSunday() {
-        return mDays.contains(SUNDAY);
+    public boolean hasDay(WeekDay day) {
+        return mDays.contains(day);
     }
 
     /**

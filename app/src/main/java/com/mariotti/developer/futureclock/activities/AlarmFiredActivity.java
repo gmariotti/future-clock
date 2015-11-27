@@ -13,6 +13,7 @@ import com.mariotti.developer.futureclock.controller.AlarmController;
 import com.mariotti.developer.futureclock.controller.AlarmFiredFragment;
 import com.mariotti.developer.futureclock.model.Alarm;
 
+import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
     @Override
     protected Fragment createFragment() {
         UUID uuid = (UUID) getIntent().getSerializableExtra(EXTRA_ALARM_FIRED_UUID);
+        Log.i(TAG, "UUID = " + uuid.toString());
 
         return AlarmFiredFragment.newInstance(uuid);
     }
@@ -35,24 +37,13 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
     public static void setActivityAlarm(Context context, UUID uuid) {
         Intent intent = AlarmFiredActivity.newIntent(context);
         intent.putExtra(EXTRA_ALARM_FIRED_UUID, uuid);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Alarm alarm = AlarmController.getAlarmController(context).getAlarm(uuid);
-        int hour = alarm.getHour();
-        int minute = alarm.getMinute();
-        // in milliseconds
-        long alarmTime = (hour * 60 * 60 + minute * 60) * 1000;
+        long alarmTime = alarm.getTimeInMillisRespectTo(Calendar.getInstance());
 
-        // considered the System Time Zone
-        TimeZone timeZone = TimeZone.getDefault();
-        Log.i(TAG, "Current time zone " + timeZone.getDisplayName());
-        alarmTime = alarmTime + timeZone.getRawOffset();
-        if (timeZone.useDaylightTime()) {
-            alarmTime += timeZone.getDSTSavings();
-        }
-
-        Log.i(TAG, "Actual time in hour " + alarmTime / 1000 / 60 / 60);
+        Log.i(TAG, "UUID = " + uuid.toString());
 
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
     }

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.mariotti.developer.futureclock.database.AlarmBaseHelper;
 import com.mariotti.developer.futureclock.database.AlarmCursorWrapper;
@@ -14,6 +15,8 @@ import com.mariotti.developer.futureclock.model.WeekDay;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -24,6 +27,8 @@ import java.util.UUID;
  * Singleton pattern
  */
 public class AlarmController {
+    private static final String TAG = "AlarmController";
+
     private static AlarmController sAlarmController;
 
     private Context mContext;
@@ -48,13 +53,13 @@ public class AlarmController {
         values.put(AlarmTable.Cols.UUID, alarm.getUUID().toString());
         String time = alarm.getHour() + ":" + alarm.getMinute();
         values.put(AlarmTable.Cols.TIME, time);
-        values.put(AlarmTable.Cols.MONDAY, alarm.hasMonday() ? 1 : 0);
-        values.put(AlarmTable.Cols.TUESDAY, alarm.hasTuesday() ? 1 : 0);
-        values.put(AlarmTable.Cols.WEDNESDAY, alarm.hasWednesday() ? 1 : 0);
-        values.put(AlarmTable.Cols.THURSDAY, alarm.hasThursday() ? 1 : 0);
-        values.put(AlarmTable.Cols.FRIDAY, alarm.hasFriday() ? 1 : 0);
-        values.put(AlarmTable.Cols.SATURDAY, alarm.hasSaturday() ? 1 : 0);
-        values.put(AlarmTable.Cols.SUNDAY, alarm.hasSunday() ? 1 : 0);
+        values.put(AlarmTable.Cols.MONDAY, alarm.hasDay(WeekDay.MONDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.TUESDAY, alarm.hasDay(WeekDay.TUESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.WEDNESDAY, alarm.hasDay(WeekDay.WEDNESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.THURSDAY, alarm.hasDay(WeekDay.THURSDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.FRIDAY, alarm.hasDay(WeekDay.FRIDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SATURDAY, alarm.hasDay(WeekDay.SATURDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SUNDAY, alarm.hasDay(WeekDay.SUNDAY) ? 1 : 0);
         values.put(AlarmTable.Cols.ACTIVE, alarm.isActive() ? 1 : 0);
         return values;
     }
@@ -73,6 +78,11 @@ public class AlarmController {
         return new AlarmCursorWrapper(cursor);
     }
 
+    /**
+     * Get the list of all alarms in the database
+     *
+     * @return list of alarms as an ArrayList
+     */
     public List<Alarm> getAlarms() {
         List<Alarm> alarms = new ArrayList<>();
 
@@ -91,6 +101,37 @@ public class AlarmController {
         return alarms;
     }
 
+    /**
+     * Get the list of all alarms active in the database
+     *
+     * @return list of alarms active as an ArrayList
+     */
+    public List<Alarm> getActiveAlarms() {
+        List<Alarm> alarms = new ArrayList<>();
+
+        AlarmCursorWrapper cursorWrapper = queryAlarms(
+                AlarmTable.Cols.ACTIVE + " = 1",
+                null
+        );
+
+        try {
+            cursorWrapper.moveToFirst();
+            while (!cursorWrapper.isAfterLast()) {
+                alarms.add(cursorWrapper.getAlarm());
+                cursorWrapper.moveToNext();
+            }
+        } finally {
+            cursorWrapper.close();
+        }
+
+        return alarms;
+    }
+
+    /**
+     * Add an alarm to the database
+     *
+     * @param alarm value to insert in the database
+     */
     public void addAlarm(Alarm alarm) {
         ContentValues values = getContentValues(alarm);
 
@@ -118,6 +159,7 @@ public class AlarmController {
     /**
      * Check the database for all enabled alarms and get it.
      * Then check the first alarm in time that will be fired
+     *
      * @return the next alarm to fire, or null if not found
      */
     public Alarm getNextAlarm() {
@@ -127,25 +169,62 @@ public class AlarmController {
         int hour = today.get(Calendar.HOUR_OF_DAY);
         int minute = today.get(Calendar.MINUTE);
 
-        // TODO
-        List<Alarm> alarms = getAlarms();
-        if (!alarms.isEmpty()) {
-            Alarm nextAlarm = new Alarm(null, hour, minute, null, false);
-            for (Alarm alarm : alarms) {
-                EnumSet<WeekDay> days = alarm.getDays();
-                // days is empty if the alarm is set for a single time and stop
-                if (days.isEmpty()) {
-                    if (nextAlarm.getHour() < alarm.getHour() ||
-                            (hour == alarm.getHour() && minute < alarm.getMinute())) {
+        WeekDay weekDay = WeekDay.getFromInt(day);
 
+        Log.d(TAG, "Day: " + day + " time: " + hour + ":" + minute);
+
+        // order the list of alarms in respect to the current day and time
+        List<Alarm> alarms = getActiveAlarms();
+        if (!alarms.isEmpty()) {
+            Collections.sort(alarms, (lhs, rhs) -> {
+                WeekDay lhsNearestDay = lhs.getNearestDay(weekDay, hour, minute);
+                WeekDay rhsNearestDay = rhs.getNearestDay(weekDay, hour, minute);
+
+                if (lhsNearestDay.compare(rhsNearestDay, weekDay) == 0) {
+                    if (lhs.getHour() < rhs.getHour()) {
+                        return -1;
+                    } else if (lhs.getHour() == rhs.getHour() && lhs.getMinute() < rhs.getMinute()) {
+                        return -1;
+                    } else {
+                        return 1;
                     }
+                } else if (lhsNearestDay.compare(rhsNearestDay, weekDay) < 0) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+        } else {
+            return null;
+        }
+
+        // correction in the sort. Move at the bottom of the list the alarms in the same day but time before today
+        boolean notRotated = false;
+        while (!notRotated && alarms.size() > 1) {
+            notRotated = true;
+            Alarm firstListAlarm = alarms.get(0);
+            if (firstListAlarm.getNearestDay(weekDay, hour, minute) == weekDay) {
+                if (firstListAlarm.getHour() < hour ||
+                        (firstListAlarm.getHour() == hour && firstListAlarm.getMinute() <= minute)) {
+                    notRotated = false;
+                    Collections.rotate(alarms, -1);
                 }
             }
         }
 
-        return null;
+        // TODO -> just for debugging, if constant can be eliminated
+        for (Alarm alarm : alarms) {
+            Log.d(TAG, "alarm " + alarm.getNearestDay(weekDay, hour, minute) + " " + alarm.getTime());
+        }
+
+        return alarms.get(0);
     }
 
+    /**
+     * Update an alarm in the database
+     *
+     * @param alarm value to update
+     */
     public void updateAlarm(Alarm alarm) {
         String uuidString = alarm.getUUID().toString();
         ContentValues values = getContentValues(alarm);
@@ -155,6 +234,20 @@ public class AlarmController {
                 values,
                 AlarmTable.Cols.UUID + " = ?",
                 new String[]{uuidString}
+        );
+    }
+
+    /**
+     * Delete an alarm in the database based on its uuid
+     *
+     * @param uuid identifier of the alarm to delete
+     * @return 1 if the row is deleted, 0 otherwise
+     */
+    public int deleteAlarm(UUID uuid) {
+        return mDatabase.delete(
+                AlarmTable.NAME,
+                AlarmTable.Cols.UUID + " = ?",
+                new String[]{uuid.toString()}
         );
     }
 }
