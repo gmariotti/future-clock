@@ -129,6 +129,11 @@ public class Alarm {
 
         time += dayDifference * 24 * 3600 * 1000;
 
+        calendar.setTimeInMillis(time);
+        Log.d(TAG, "Alarm day " + calendar.get(Calendar.DAY_OF_WEEK)
+                + " at " + calendar.get(Calendar.HOUR_OF_DAY)
+                + ":" + calendar.get(Calendar.MINUTE));
+
         return time;
     }
 

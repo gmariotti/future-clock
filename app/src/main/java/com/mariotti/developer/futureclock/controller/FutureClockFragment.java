@@ -2,13 +2,13 @@ package com.mariotti.developer.futureclock.controller;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -34,13 +33,15 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.schedulers.Schedulers;
-
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class FutureClockFragment extends Fragment {
     private static final String TAG = "FutureClockFragment";
-    private static final int REQUEST_CODE = 57;
+    private static final String DIALOG_DELETE_ALARM = "DialogDeleteAlarm";
+
+    private static final int REQUEST_CODE_ALARM = 57;
+    private static final int REQUEST_CODE_DELETE_ALARM = 902;
 
     private Button mOkButton;
     private Button mVoiceButton;
@@ -74,7 +75,7 @@ public class FutureClockFragment extends Fragment {
         mAlarmFab = (FloatingActionButton) view.findViewById(R.id.alarm_fab);
         mAlarmFab.setOnClickListener(v -> {
             Intent intent = AlarmActivity.newIntent(getActivity(), null);
-            startActivityForResult(intent, REQUEST_CODE);
+            startActivityForResult(intent, REQUEST_CODE_ALARM);
         });
         mAlarmRecyclerView = (RecyclerView) view.findViewById(R.id.alarms_recycler_view);
         mAlarmRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -89,7 +90,7 @@ public class FutureClockFragment extends Fragment {
                     subscriber.onCompleted();
                 } catch (IOException e) {
                     Snackbar.make(view, "Weather Error", Snackbar.LENGTH_LONG)
-                            .setAction("", view -> Log.i(TAG, "parseOpenMapWeather error"))
+                            .setAction("", view -> Log.d(TAG, "parseOpenMapWeather error"))
                             .show();
                 }
             }
@@ -99,19 +100,19 @@ public class FutureClockFragment extends Fragment {
                 .subscribe(new Subscriber<OpenMapWeather>() {
                     @Override
                     public void onCompleted() {
-                        Log.i(TAG, "onCompleted");
+                        Log.d(TAG, "onCompleted");
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.i(TAG, "onError");
+                        Log.d(TAG, "onError");
                     }
 
                     @Override
                     public void onNext(OpenMapWeather openMapWeather) {
                         mWeatherText.setText(openMapWeather.toString());
                         mVoiceButton.setEnabled(true);
-                        Log.i(TAG, "onNext");
+                        Log.d(TAG, "onNext");
                     }
                 }));
 
@@ -134,15 +135,33 @@ public class FutureClockFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+
+        updateUI();
+        updateNextAlarm();
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             return;
         }
 
         // if result code is RESULT_OK then an alarm as been updated or added
-        if (requestCode == REQUEST_CODE) {
+        if (requestCode == REQUEST_CODE_ALARM) {
             updateUI();
             updateNextAlarm();
+        } else if (requestCode == REQUEST_CODE_DELETE_ALARM) {
+            boolean confirm = data.getBooleanExtra(AlarmDeleteFragment.EXTRA_DELETE_CONFIRM, false);
+            if (confirm) {
+                updateUI();
+                updateNextAlarm();
+            } else {
+                Snackbar.make(getView(), "Error deleting alarm", Snackbar.LENGTH_LONG)
+                        .show();
+            }
         }
     }
 
@@ -224,22 +243,17 @@ public class FutureClockFragment extends Fragment {
         public void onClick(View v) {
             // Update the clicked alarm
             Intent intent = AlarmActivity.newIntent(getActivity(), mAlarm.getUUID());
-            startActivityForResult(intent, REQUEST_CODE);
+            startActivityForResult(intent, REQUEST_CODE_ALARM);
         }
 
         @Override
         public boolean onLongClick(View v) {
-            // TODO -> implement dialog confirmation
-            if (AlarmController.getAlarmController(getActivity()).deleteAlarm(mAlarm.getUUID()) != 1) {
-                Snackbar.make(v, "Error delete alarm", Snackbar.LENGTH_LONG)
-                        .setAction("", view -> {
-                            Log.i(TAG, "onLongClick event");
-                        })
-                        .show();
-            } else {
-                updateUI();
-                updateNextAlarm();
-            }
+            // show a dialog to delete the current alarm
+            AlarmDeleteFragment dialog = AlarmDeleteFragment.newInstance(mAlarm);
+            dialog.setTargetFragment(FutureClockFragment.this, REQUEST_CODE_DELETE_ALARM);
+            FragmentManager manager = getFragmentManager();
+            dialog.show(manager, DIALOG_DELETE_ALARM);
+
             return true;
         }
     }

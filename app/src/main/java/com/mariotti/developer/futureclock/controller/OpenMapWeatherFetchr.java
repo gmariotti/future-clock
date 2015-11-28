@@ -53,7 +53,7 @@ public class OpenMapWeatherFetchr {
 
             Gson gson = new GsonBuilder().create();
             OpenMapWeather weather = gson.fromJson(jsonResult, OpenMapWeather.class);
-            Log.i(TAG, "JSON weather object created");
+            Log.d(TAG, "JSON weather object created");
 
             return weather;
         } finally {

@@ -25,7 +25,7 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
     @Override
     protected Fragment createFragment() {
         UUID uuid = (UUID) getIntent().getSerializableExtra(EXTRA_ALARM_FIRED_UUID);
-        Log.i(TAG, "UUID = " + uuid.toString());
+        Log.d(TAG, "UUID = " + uuid.toString());
 
         return AlarmFiredFragment.newInstance(uuid);
     }
@@ -43,8 +43,14 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
         Alarm alarm = AlarmController.getAlarmController(context).getAlarm(uuid);
         long alarmTime = alarm.getTimeInMillisRespectTo(Calendar.getInstance());
 
-        Log.i(TAG, "UUID = " + uuid.toString());
+        Log.d(TAG, "UUID = " + uuid.toString());
 
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+        // TODO -> alarm is modified but UI of FutureClockFragment is not updated
+        Intent intentAlarmInfo = AlarmActivity.newIntent(context, uuid);
+        PendingIntent pendingIntentAlarmInfo = PendingIntent.getActivity(context, REQUEST_CODE, intentAlarmInfo, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(alarmTime, pendingIntentAlarmInfo);
+        alarmManager.setAlarmClock(clockInfo, pendingIntent);
+
+        //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
     }
 }
