@@ -43,10 +43,6 @@ public class FutureClockFragment extends Fragment {
     private static final int REQUEST_CODE_ALARM = 57;
     private static final int REQUEST_CODE_DELETE_ALARM = 902;
 
-    private Button mOkButton;
-    private Button mVoiceButton;
-    private TextView mWeatherText;
-
     private FloatingActionButton mAlarmFab;
     private RecyclerView mAlarmRecyclerView;
     private AlarmAdapter mAdapter;
@@ -66,11 +62,6 @@ public class FutureClockFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_future_clock, container, false);
 
-        mOkButton = (Button) view.findViewById(R.id.ok_button);
-        mVoiceButton = (Button) view.findViewById(R.id.voice_button);
-        mVoiceButton.setEnabled(false);
-        mWeatherText = (TextView) view.findViewById(R.id.current_weather_text);
-
         // Part about the alarm list
         mAlarmFab = (FloatingActionButton) view.findViewById(R.id.alarm_fab);
         mAlarmFab.setOnClickListener(v -> {
@@ -79,54 +70,6 @@ public class FutureClockFragment extends Fragment {
         });
         mAlarmRecyclerView = (RecyclerView) view.findViewById(R.id.alarms_recycler_view);
         mAlarmRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        // Part about the weather and voice part
-        mOkButton.setOnClickListener(v -> Observable.create(new Observable.OnSubscribe<OpenMapWeather>() {
-
-            @Override
-            public void call(Subscriber<? super OpenMapWeather> subscriber) {
-                try {
-                    subscriber.onNext(OpenMapWeatherFetchr.parseOpenMapWeather());
-                    subscriber.onCompleted();
-                } catch (IOException e) {
-                    Snackbar.make(view, "Weather Error", Snackbar.LENGTH_LONG)
-                            .setAction("", view -> Log.d(TAG, "parseOpenMapWeather error"))
-                            .show();
-                }
-            }
-        })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<OpenMapWeather>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.d(TAG, "onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "onError");
-                    }
-
-                    @Override
-                    public void onNext(OpenMapWeather openMapWeather) {
-                        mWeatherText.setText(openMapWeather.toString());
-                        mVoiceButton.setEnabled(true);
-                        Log.d(TAG, "onNext");
-                    }
-                }));
-
-        mVoiceButton.setOnClickListener(new View.OnClickListener() {
-            TextToSpeech mTextToSpeech;
-
-            @Override
-            public void onClick(View v) {
-                mTextToSpeech = new TextToSpeech(getActivity(), status -> {
-                    String goodMorning = "Good morning Sir, ";
-                    mTextToSpeech.speak(goodMorning + mWeatherText.getText().toString(), TextToSpeech.QUEUE_FLUSH, null);
-                });
-            }
-        });
 
         updateUI();
         updateNextAlarm();
@@ -204,7 +147,12 @@ public class FutureClockFragment extends Fragment {
             Alarm alarm = AlarmController.getAlarmController(getActivity()).getNextAlarm();
             if (alarm != null) {
                 AlarmFiredActivity.setActivityAlarm(getActivity(), alarm.getUUID());
+            } else {
+                Log.d(TAG, "No alarm founded");
             }
+        } else {
+            // Delete the previously set alarm
+            AlarmFiredActivity.cancelAlarm(getActivity());
         }
     }
 

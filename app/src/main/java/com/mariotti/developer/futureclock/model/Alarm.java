@@ -53,8 +53,16 @@ public class Alarm {
     public String getTime() {
         String hour = mHour < 10 ? "0" + mHour : Integer.toString(mHour);
         String minute = mMinute < 10 ? "0" + mMinute : Integer.toString(mMinute);
+        String time = hour + ":" + minute;
 
-        return hour + ":" + minute;
+        Log.d(TAG, "Time is " + time);
+
+        return time;
+    }
+
+    @Override
+    public String toString() {
+        return "Alarm " + getTime() + " active on " + getDaysString();
     }
 
     public String getDaysString() {
@@ -99,7 +107,6 @@ public class Alarm {
             return WeekDay.next(day);
         }
     }
-
 
     public long getTimeInMillisRespectTo(Calendar calendar) {
         long time = calendar.getTimeInMillis();

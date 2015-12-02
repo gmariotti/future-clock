@@ -14,4 +14,13 @@
         android:layout_centerVertical="true"
         tools:text="Alarm of time 00:00" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Talk"
+        android:id="@+id/button_talk"
+        android:layout_below="@+id/alarm_fired_text_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="41dp" />
+
 </RelativeLayout>

@@ -9,6 +9,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.model.Alarm;
 
 import java.util.UUID;
@@ -21,7 +22,8 @@ public class AlarmDeleteFragment extends DialogFragment {
 
     public static final String EXTRA_DELETE_CONFIRM = "com.mariotti.developer.futureclock.controller.confirm";
 
-    public AlarmDeleteFragment() {}
+    public AlarmDeleteFragment() {
+    }
 
     public static AlarmDeleteFragment newInstance(Alarm alarm) {
         AlarmDeleteFragment fragment = new AlarmDeleteFragment();
@@ -44,8 +46,9 @@ public class AlarmDeleteFragment extends DialogFragment {
         Log.d(TAG, "onCreateDialog");
 
         return new AlertDialog.Builder(getActivity())
-                .setTitle("Delete alarm")
-                .setMessage("Delete alarm " + time + " -> " + days)
+                .setTitle(getResources().getString(R.string.alarm_delete_dialog_title))
+                .setMessage(getResources().getString(R.string.alarm_delete_dialog_message)
+                        + " " + time + " -> " + days)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                     if (AlarmController.getAlarmController(getActivity()).deleteAlarm(uuid) == 1) {
                         Log.d(TAG, "Alarm deleted");
@@ -63,6 +66,8 @@ public class AlarmDeleteFragment extends DialogFragment {
     }
 
     private void sendResult(int resultCode, boolean confirm) {
+        Log.d(TAG, "sendResult with confirm = " + confirm);
+
         if (getTargetFragment() == null) {
             return;
         }

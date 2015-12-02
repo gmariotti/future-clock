@@ -1,6 +1,8 @@
 package com.mariotti.developer.futureclock.controller;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,21 +12,23 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.WeekDay;
 
-import java.util.EnumSet;
 import java.util.UUID;
 
 public class AlarmFragment extends Fragment {
+    private static final String TAG = "AlarmFragment";
+    private static final String DIALOG_TIME = "TimePickerFragment";
     private static final String UUID_ARG = "UUID_ARG";
+
+    private static final int REQUEST_CODE_TIME = 565;
 
     private Alarm mAlarm;
 
-    private TimePicker mTimePicker;
+    private TextView mTimeTextView;
     private TextView mMondayTextView;
     private TextView mTuesdayTextView;
     private TextView mWednesdayTextView;
@@ -67,14 +71,12 @@ public class AlarmFragment extends Fragment {
         mSaturdayTextView = initializeDayTextView(view, R.id.alarm_textview_sat, WeekDay.SATURDAY);
         mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.SUNDAY);
 
-        // works only for API 23
-        mTimePicker = (TimePicker) view.findViewById(R.id.alarm_time_picker);
-        mTimePicker.setIs24HourView(true);
-        mTimePicker.setHour(mAlarm.getHour());
-        mTimePicker.setMinute(mAlarm.getMinute());
-        mTimePicker.setOnTimeChangedListener((timePicker, hourOfDay, minute) -> {
-            mAlarm.setHour(hourOfDay);
-            mAlarm.setMinute(minute);
+        mTimeTextView = (TextView) view.findViewById(R.id.alarm_time_picker);
+        mTimeTextView.setText(mAlarm.getTime());
+        mTimeTextView.setOnClickListener(v -> {
+            TimePickerFragment dialog = TimePickerFragment.newInstance(mAlarm);
+            dialog.setTargetFragment(AlarmFragment.this, REQUEST_CODE_TIME);
+            dialog.show(getFragmentManager(), DIALOG_TIME);
         });
 
         mSwitch = (Switch) view.findViewById(R.id.alarm_switch);
@@ -95,20 +97,52 @@ public class AlarmFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_TIME) {
+            String newTime = data.getStringExtra(TimePickerFragment.EXTRA_TIME);
+            mTimeTextView.setText(newTime);
+            // TODO -> implement ":" as a constant in TimePickerFragment
+            String[] time = newTime.split(":");
+            mAlarm.setHour(Integer.parseInt(time[0]));
+            mAlarm.setMinute(Integer.parseInt(time[1]));
+        }
+    }
+
     private TextView initializeDayTextView(View view, int idTextView, final WeekDay day) {
         final TextView textView = (TextView) view.findViewById(idTextView);
         textView.setOnClickListener(v -> {
-            if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
-                textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
-                mAlarm.addDay(day);
+            // Compatibility with version before Android M - API 23
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
+                    textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
+                    mAlarm.addDay(day);
+                } else {
+                    textView.setTextColor(getResources().getColor(R.color.grey, null));
+                    mAlarm.removeDay(day);
+                }
             } else {
-                textView.setTextColor(getResources().getColor(R.color.grey, null));
-                mAlarm.removeDay(day);
+                if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey)) {
+                    textView.setTextColor(getResources().getColor(R.color.colorAccent));
+                    mAlarm.addDay(day);
+                } else {
+                    textView.setTextColor(getResources().getColor(R.color.grey));
+                    mAlarm.removeDay(day);
+                }
             }
         });
 
         if (mAlarm.hasDay(day)) {
-            textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
+            // Compatibility with version before Android M - API 23
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
+            } else {
+                textView.setTextColor(getResources().getColor(R.color.colorAccent));
+            }
         }
 
         return textView;
