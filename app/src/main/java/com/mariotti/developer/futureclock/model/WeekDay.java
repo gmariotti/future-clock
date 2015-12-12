@@ -1,39 +1,78 @@
 package com.mariotti.developer.futureclock.model;
 
-import java.io.Serializable;
+import android.util.ArraySet;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Enum class to represent the day of the week
- * The integer value is the same of the java.util.Calendar class
- * TODO -> evaluate impact of enum on performance instead of using static final int
+ * Represent the days of the week, considering Sunday as the first day of the week.
+ * Day's value is equal to the value of the Calendar class
  */
-public enum WeekDay implements Serializable {
-    SUNDAY("Sun", 1),
-    MONDAY("Mon", 2),
-    TUESDAY("Tue", 3),
-    WEDNESDAY("Wed", 4),
-    THURSDAY("Thu", 5),
-    FRIDAY("Fri", 6),
-    SATURDAY("Sat", 7);
+public class WeekDay {
+    public static final int SUNDAY = 1;
+    public static final int MONDAY = 2;
+    public static final int TUESDAY = 3;
+    public static final int WEDNESDAY = 4;
+    public static final int THURSDAY = 5;
+    public static final int FRIDAY = 6;
+    public static final int SATURDAY = 7;
 
-    private String shortName;
-    private int calendarValue;
-
-    private WeekDay(String shortName, int calendarValue) {
-        this.shortName = shortName;
-        this.calendarValue = calendarValue;
-    }
-
-    public String getShortName() {
-        return shortName;
-    }
-
-    public int getCalendarValue() {
-        return calendarValue;
-    }
-
-    public static WeekDay next(WeekDay day) {
+    // TODO -> return string based on system language
+    public static String getShortName(int day) {
         switch (day) {
+            case SUNDAY:
+                return "Sun";
+            case MONDAY:
+                return "Mon";
+            case TUESDAY:
+                return "Tue";
+            case WEDNESDAY:
+                return "Wed";
+            case THURSDAY:
+                return "Thu";
+            case FRIDAY:
+                return "Fri";
+            case SATURDAY:
+                return "Sat";
+            default:
+                return "NoDay";
+        }
+    }
+
+    // TODO -> return string based on system language
+    public static String getName(int day) {
+        switch (day) {
+            case SUNDAY:
+                return "Sunday";
+            case MONDAY:
+                return "Monday";
+            case TUESDAY:
+                return "Tuesday";
+            case WEDNESDAY:
+                return "Wednesday";
+            case THURSDAY:
+                return "Thursday";
+            case FRIDAY:
+                return "Friday";
+            case SATURDAY:
+                return "Saturday";
+            default:
+                return "NoDay";
+        }
+    }
+
+    /**
+     * Return the next day based on the value passed as an argument
+     * @param day
+     * @return the next day, -1 if a invalid day is inserted
+     */
+    public static int getNextDay(int day) {
+        switch (day) {
+            case SUNDAY:
+                return MONDAY;
             case MONDAY:
                 return TUESDAY;
             case TUESDAY:
@@ -46,71 +85,56 @@ public enum WeekDay implements Serializable {
                 return SATURDAY;
             case SATURDAY:
                 return SUNDAY;
-            case SUNDAY:
-                return MONDAY;
             default:
-                // should never happen
-                return null;
-        }
-    }
-
-    public static WeekDay getFromInt(int day) {
-        switch (day) {
-            case 1:
-                return SUNDAY;
-            case 2:
-                return MONDAY;
-            case 3:
-                return TUESDAY;
-            case 4:
-                return WEDNESDAY;
-            case 5:
-                return THURSDAY;
-            case 6:
-                return FRIDAY;
-            case 7:
-                return SATURDAY;
-            default:
-                return null;
-        }
-    }
-
-    public int compare(WeekDay dayToCompare, WeekDay dayCenter) {
-        // case in which this is a day before dayToCompare
-        if (this.getCalendarValue() < dayToCompare.getCalendarValue()) {
-            if (this.getCalendarValue() >= dayCenter.getCalendarValue()) {
                 return -1;
-            } else {
-                if (dayToCompare.getCalendarValue() >= dayCenter.getCalendarValue()) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-        } else if (this.getCalendarValue() > dayToCompare.getCalendarValue()) {
-            // case in which this is after dayToCompare
-            if (dayToCompare.getCalendarValue() >= dayCenter.getCalendarValue()) {
-                return 1;
-            } else {
-                if (this.getCalendarValue() >= dayCenter.getCalendarValue()) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-        } else {
-            return 0;
         }
     }
 
-    public int getDayDifference(WeekDay dayToCompare) {
-        // it means that this day is before the one to compare, so will occur in the next week
-        if (this.getCalendarValue() < dayToCompare.getCalendarValue()) {
-            return 7 - dayToCompare.getCalendarValue() + this.getCalendarValue();
+    /**
+     * Get the difference in days between two day
+     * Example: Sunday to Tuesday -> 3 - 1 = 2 days difference
+     * Example: Saturday to Tuesday -> 7 - 7 + 3 = 3 days difference
+     * @param dayToCompare
+     * @param comparisonDay
+     * @return
+     */
+    public static int getDaysDifference(int dayToCompare, int comparisonDay) {
+        // is true if the dayToCompare is after the comparisonDay
+        if (dayToCompare > comparisonDay) {
+            return 7 - comparisonDay + dayToCompare;
+        } else {
+            return dayToCompare - comparisonDay;
         }
-        // it means that this day is after the one to compare, so is in the same week
-        else {
-            return this.getCalendarValue() - dayToCompare.getCalendarValue();
+    }
+
+    // TODO
+    public static int compare(int day, int comparisonDay, int pivotDay) {
+        return 0;
+    }
+
+    public static int[] reorderDays(int[] days) {
+        List<Integer> list = new ArrayList<>();
+
+        // Insert all valid days into the list
+        for (int day : days) {
+            if (day <= 7 && day >= 1) {
+                Integer integerDay = new Integer(day);
+                // Check uniqueness in the list
+                if (!list.contains(integerDay)) {
+                    list.add(integerDay);
+                }
+            }
         }
+
+        // Reorder the list
+        Collections.sort(list);
+
+        // Create new array of reordered days
+        int[] newDays = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            newDays[i] = list.get(i).intValue();
+        }
+
+        return newDays;
     }
 }

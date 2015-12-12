@@ -2,6 +2,8 @@ package com.mariotti.developer.futureclock.model;
 
 import android.util.Log;
 
+import com.mariotti.developer.futureclock.util.AlarmUtil;
+
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.UUID;
@@ -14,7 +16,7 @@ public class Alarm {
     private UUID mUUID;
     private int mHour;
     private int mMinute;
-    private EnumSet<WeekDay> mDays;
+    private int mDays[];
     private boolean mActive;
 
     /**
@@ -25,28 +27,40 @@ public class Alarm {
         this.mUUID = UUID.randomUUID();
         this.mHour = 0;
         this.mMinute = 0;
-        mDays = EnumSet.noneOf(WeekDay.class);
+        mActive = false;
     }
 
-     /**
+    /**
      * Set the alarm based on the arguments.
-     * @param UUID alarm identifier
-     * @param hour hour of the alarm
+     *
+     * @param UUID   alarm identifier
+     * @param hour   hour of the alarm
      * @param minute minute of the alarm
-     * @param days list of days in which the alarm is enabled
-     * @throws IllegalArgumentException if hour and/or minute is a wrong value
+     * @param days   list of days in which the alarm is enabled
+     * @throws IllegalArgumentException if hour and/or minute is a wrong value,
+     *                                  or days.length is greater than 7
      */
-    public Alarm(UUID UUID, int hour, int minute, EnumSet<WeekDay> days, boolean active)
+    public Alarm(UUID UUID, int hour, int minute, int[] days, boolean active)
             throws IllegalArgumentException {
         // Throw an exception if an illegal time is inserted
         if (hour > 23 || hour < 0 || minute > 59 || minute < 0) {
             throw new IllegalArgumentException();
         }
 
+        if (days.length > 7) {
+            throw new IllegalArgumentException();
+        } else {
+            for (int day : days) {
+                if (day > 7 || day < 1) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+
         mUUID = UUID;
         mHour = hour;
         mMinute = minute;
-        mDays = days;
+        mDays = WeekDay.reorderDays(days);
         mActive = active;
     }
 
@@ -62,101 +76,12 @@ public class Alarm {
 
     @Override
     public String toString() {
-        return "Alarm " + getTime() + " active on " + getDaysString();
-    }
-
-    public String getDaysString() {
-        String result = "NoDay";
-
-        if (!mDays.isEmpty()) {
-            result = "";
-            int counter = 0;
-            for (WeekDay day : mDays) {
-                if (counter != 0) {
-                    result += ", ";
-                } else {
-                    counter = 1;
-                }
-                result += day.getShortName();
-            }
-        }
-
-        return result;
-    }
-
-    public void addDay(WeekDay day) {
-        if (mDays.add(day)) {
-            Log.d(TAG, "Day added " + day.getShortName());
-        }
-    }
-
-    public WeekDay getNearestDay(WeekDay day, int hour, int minute) {
-        if (!mDays.isEmpty()) {
-            if (mDays.contains(day) && (mHour > hour || (mHour == hour && mMinute > minute))) {
-                return day;
-            } else {
-                WeekDay nextDay = WeekDay.next(day);
-                while (!mDays.contains(nextDay)) {
-                    nextDay = WeekDay.next(nextDay);
-                }
-                return nextDay;
-            }
-        } else if(mHour > hour || (mHour == hour && mMinute > minute)) {
-            return day;
-        } else {
-            return WeekDay.next(day);
-        }
-    }
-
-    public long getTimeInMillisRespectTo(Calendar calendar) {
-        long time = calendar.getTimeInMillis();
-
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        WeekDay day = WeekDay.getFromInt(calendar.get(Calendar.DAY_OF_WEEK));
-
-        // manage minutes and hours problem
-        if (hour > mHour || (hour == mHour && minute > mMinute)) {
-            // add to time the milliseconds to become a new day
-            time += (60 - minute) * 60 * 1000;
-            time += (23 - hour) * 3600 * 1000;
-            day = next(day);
-        } else {
-            if (minute > mMinute) {
-                hour++;
-                minute = 0;
-            }
-            time += (mHour - hour) * 3600 * 1000;
-            time += (mMinute - minute) * 60 * 1000;
-        }
-
-        // add the time difference based on the day to consider
-        WeekDay nearestDay = getNearestDay(day, hour, minute);
-        int dayDifference = nearestDay.getDayDifference(day);
-
-        time += dayDifference * 24 * 3600 * 1000;
-
-        calendar.setTimeInMillis(time);
-        Log.d(TAG, "Alarm day " + calendar.get(Calendar.DAY_OF_WEEK)
-                + " at " + calendar.get(Calendar.HOUR_OF_DAY)
-                + ":" + calendar.get(Calendar.MINUTE));
-
-        return time;
-    }
-
-    public void removeDay(WeekDay day) {
-        if (mDays.remove(day)) {
-            Log.d(TAG, "Day removed " + day.getShortName());
-        }
-
-    }
-
-    public boolean hasDay(WeekDay day) {
-        return mDays.contains(day);
+        return "Alarm " + getTime() + " active on " + AlarmUtil.getShortDaysString(this);
     }
 
     /**
      * Get UUID
+     *
      * @return UUID
      */
     public UUID getUUID() {
@@ -165,6 +90,7 @@ public class Alarm {
 
     /**
      * Get the hour
+     *
      * @return hour
      */
     public int getHour() {
@@ -177,6 +103,7 @@ public class Alarm {
 
     /**
      * Get the minute
+     *
      * @return minute
      */
     public int getMinute() {
@@ -188,15 +115,21 @@ public class Alarm {
     }
 
     /**
-     * Get EnumSet of days
-     * @return list of days
+     * Get Array of days
+     *
+     * @return array of days
      */
-    public EnumSet<WeekDay> getDays() {
+    public int[] getDays() {
         return mDays;
+    }
+
+    public void setDays(int[] days) {
+        mDays = WeekDay.reorderDays(days);
     }
 
     /**
      * Check if the alarm is active or not
+     *
      * @return true if active, false otherwise
      */
     public boolean isActive() {
