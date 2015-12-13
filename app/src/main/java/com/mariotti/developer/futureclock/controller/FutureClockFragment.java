@@ -27,6 +27,7 @@ import com.mariotti.developer.futureclock.activities.AlarmActivity;
 import com.mariotti.developer.futureclock.activities.AlarmFiredActivity;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.OpenMapWeather;
+import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -177,7 +178,7 @@ public class FutureClockFragment extends Fragment {
         public void bindAlarm(final Alarm alarm) {
             mAlarm = alarm;
             mTimeTextView.setText(mAlarm.getTime());
-            mDaysTextView.setText(mAlarm.getDaysString());
+            mDaysTextView.setText(AlarmUtil.getShortDaysString(mAlarm));
             mActiveSwitch.setChecked(mAlarm.isActive());
 
             mActiveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {

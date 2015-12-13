@@ -80,9 +80,11 @@ public class AlarmUtil {
     public static boolean hasDay(Alarm alarm, int day) {
         int[] days = alarm.getDays();
 
-        for (int dayToCompare : days) {
-            if (dayToCompare == day) {
-                return true;
+        if (days.length != 0) {
+            for (int dayToCompare : days) {
+                if (dayToCompare == day) {
+                    return true;
+                }
             }
         }
 

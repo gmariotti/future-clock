@@ -27,6 +27,7 @@ public class Alarm {
         this.mUUID = UUID.randomUUID();
         this.mHour = 0;
         this.mMinute = 0;
+        mDays = new int[0];
         mActive = false;
     }
 

@@ -66,6 +66,7 @@ public class WeekDay {
 
     /**
      * Return the next day based on the value passed as an argument
+     *
      * @param day
      * @return the next day, -1 if a invalid day is inserted
      */
@@ -94,6 +95,7 @@ public class WeekDay {
      * Get the difference in days between two day
      * Example: Sunday to Tuesday -> 3 - 1 = 2 days difference
      * Example: Saturday to Tuesday -> 7 - 7 + 3 = 3 days difference
+     *
      * @param dayToCompare
      * @param comparisonDay
      * @return
@@ -107,9 +109,37 @@ public class WeekDay {
         }
     }
 
-    // TODO
+    /**
+     * Compares two days in respect to a pivot day.
+     *
+     * @param day           first day of comparison
+     * @param comparisonDay second day of comparison
+     * @param pivotDay      pivot to which confront
+     * @return -1 if day occurs before comparisonDay, 1 if it occurs after and
+     * 0 if they are the same day
+     */
     public static int compare(int day, int comparisonDay, int pivotDay) {
-        return 0;
+        // case in which day is before comparisonDay
+        if (day < comparisonDay) {
+            // day occurs after the pivotDay
+            if (day >= pivotDay) return -1;
+            else {
+                // comparisonDay is after the pivotDay
+                if (comparisonDay >= pivotDay) return 1;
+                else return -1;
+            }
+        }
+        // case in which day is after comparisonDay
+        else if (day > comparisonDay) {
+            if (comparisonDay >= pivotDay) return 1;
+            else {
+                if (day >= pivotDay) return -1;
+                else return 1;
+            }
+        } else {
+            // same day
+            return 0;
+        }
     }
 
     public static int[] reorderDays(int[] days) {

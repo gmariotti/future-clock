@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.WeekDay;
+import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.UUID;
 
@@ -113,30 +114,30 @@ public class AlarmFragment extends Fragment {
         }
     }
 
-    private TextView initializeDayTextView(View view, int idTextView, final WeekDay day) {
+    private TextView initializeDayTextView(View view, int idTextView, final int day) {
         final TextView textView = (TextView) view.findViewById(idTextView);
         textView.setOnClickListener(v -> {
             // Compatibility with version before Android M - API 23
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey, null)) {
                     textView.setTextColor(getResources().getColor(R.color.colorAccent, null));
-                    mAlarm.addDay(day);
+                    AlarmUtil.addDay(mAlarm, day);
                 } else {
                     textView.setTextColor(getResources().getColor(R.color.grey, null));
-                    mAlarm.removeDay(day);
+                    AlarmUtil.removeDay(mAlarm, day);
                 }
             } else {
                 if (textView.getCurrentTextColor() == getResources().getColor(R.color.grey)) {
                     textView.setTextColor(getResources().getColor(R.color.colorAccent));
-                    mAlarm.addDay(day);
+                    AlarmUtil.addDay(mAlarm, day);
                 } else {
                     textView.setTextColor(getResources().getColor(R.color.grey));
-                    mAlarm.removeDay(day);
+                    AlarmUtil.removeDay(mAlarm, day);
                 }
             }
         });
 
-        if (mAlarm.hasDay(day)) {
+        if (AlarmUtil.hasDay(mAlarm, day)) {
             // Compatibility with version before Android M - API 23
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 textView.setTextColor(getResources().getColor(R.color.colorAccent, null));

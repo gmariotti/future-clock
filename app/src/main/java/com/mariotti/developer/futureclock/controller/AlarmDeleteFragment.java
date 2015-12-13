@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.model.Alarm;
+import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class AlarmDeleteFragment extends DialogFragment {
         Bundle args = new Bundle();
         args.putSerializable(ARG_UUID, alarm.getUUID());
         args.putString(ARG_TIME, alarm.getTime());
-        args.putString(ARG_DAYS, alarm.getDaysString());
+        args.putString(ARG_DAYS, AlarmUtil.getShortDaysString(alarm));
         fragment.setArguments(args);
 
         return fragment;

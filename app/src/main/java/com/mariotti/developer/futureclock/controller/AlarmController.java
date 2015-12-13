@@ -12,6 +12,7 @@ import com.mariotti.developer.futureclock.database.AlarmDbSchema;
 import com.mariotti.developer.futureclock.database.AlarmDbSchema.AlarmTable;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.WeekDay;
+import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,13 +54,13 @@ public class AlarmController {
         values.put(AlarmTable.Cols.UUID, alarm.getUUID().toString());
         String time = alarm.getHour() + ":" + alarm.getMinute();
         values.put(AlarmTable.Cols.TIME, time);
-        values.put(AlarmTable.Cols.MONDAY, alarm.hasDay(WeekDay.MONDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.TUESDAY, alarm.hasDay(WeekDay.TUESDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.WEDNESDAY, alarm.hasDay(WeekDay.WEDNESDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.THURSDAY, alarm.hasDay(WeekDay.THURSDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.FRIDAY, alarm.hasDay(WeekDay.FRIDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.SATURDAY, alarm.hasDay(WeekDay.SATURDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.SUNDAY, alarm.hasDay(WeekDay.SUNDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.MONDAY, AlarmUtil.hasDay(alarm, WeekDay.MONDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.TUESDAY, AlarmUtil.hasDay(alarm, WeekDay.TUESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.WEDNESDAY, AlarmUtil.hasDay(alarm, WeekDay.WEDNESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.THURSDAY, AlarmUtil.hasDay(alarm, WeekDay.THURSDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.FRIDAY, AlarmUtil.hasDay(alarm, WeekDay.FRIDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SATURDAY, AlarmUtil.hasDay(alarm, WeekDay.SATURDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SUNDAY, AlarmUtil.hasDay(alarm, WeekDay.SUNDAY) ? 1 : 0);
         values.put(AlarmTable.Cols.ACTIVE, alarm.isActive() ? 1 : 0);
         return values;
     }
@@ -169,26 +170,24 @@ public class AlarmController {
         int hour = today.get(Calendar.HOUR_OF_DAY);
         int minute = today.get(Calendar.MINUTE);
 
-        WeekDay weekDay = WeekDay.getFromInt(day);
-
         Log.d(TAG, "Day: " + day + " time: " + hour + ":" + minute);
 
         // order the list of alarms in respect to the current day and time
         List<Alarm> alarms = getActiveAlarms();
         if (!alarms.isEmpty()) {
-            Collections.sort(alarms, (lhs, rhs) -> {
-                WeekDay lhsNearestDay = lhs.getNearestDay(weekDay, hour, minute);
-                WeekDay rhsNearestDay = rhs.getNearestDay(weekDay, hour, minute);
+            Collections.sort(alarms, (lAlarm, rAlarm) -> {
+                int lAlarmNearestDay = AlarmUtil.getNearestDay(lAlarm, day, hour, minute);
+                int rAlarmNearestDay = AlarmUtil.getNearestDay(rAlarm, day, hour, minute);
 
-                if (lhsNearestDay.compare(rhsNearestDay, weekDay) == 0) {
-                    if (lhs.getHour() < rhs.getHour()) {
+                if (WeekDay.compare(lAlarmNearestDay, rAlarmNearestDay, day) == 0) {
+                    if (lAlarm.getHour() < rAlarm.getHour()) {
                         return -1;
-                    } else if (lhs.getHour() == rhs.getHour() && lhs.getMinute() < rhs.getMinute()) {
+                    } else if (lAlarm.getHour() == rAlarm.getHour() && lAlarm.getMinute() < rAlarm.getMinute()) {
                         return -1;
                     } else {
                         return 1;
                     }
-                } else if (lhsNearestDay.compare(rhsNearestDay, weekDay) < 0) {
+                } else if (WeekDay.compare(lAlarmNearestDay, rAlarmNearestDay, day) < 0) {
                     return -1;
                 } else {
                     return 1;
@@ -203,7 +202,7 @@ public class AlarmController {
         while (!notRotated && alarms.size() > 1) {
             notRotated = true;
             Alarm firstListAlarm = alarms.get(0);
-            if (firstListAlarm.getNearestDay(weekDay, hour, minute) == weekDay) {
+            if (AlarmUtil.getNearestDay(firstListAlarm, day, hour, minute) == day) {
                 if (firstListAlarm.getHour() < hour ||
                         (firstListAlarm.getHour() == hour && firstListAlarm.getMinute() <= minute)) {
                     notRotated = false;
@@ -214,7 +213,8 @@ public class AlarmController {
 
         // TODO -> just for debugging, if constant can be eliminated
         for (Alarm alarm : alarms) {
-            Log.d(TAG, "alarm " + alarm.getNearestDay(weekDay, hour, minute) + " " + alarm.getTime());
+            Log.d(TAG, "alarm " + AlarmUtil.getNearestDay(alarm, day, hour, minute)
+                    + " " + alarm.getTime());
         }
 
         return alarms.get(0);

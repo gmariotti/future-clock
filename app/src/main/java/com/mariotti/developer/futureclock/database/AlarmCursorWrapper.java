@@ -7,7 +7,9 @@ import com.mariotti.developer.futureclock.database.AlarmDbSchema.AlarmTable;
 import com.mariotti.developer.futureclock.model.Alarm;
 import com.mariotti.developer.futureclock.model.WeekDay;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
 
 public class AlarmCursorWrapper extends CursorWrapper {
@@ -27,30 +29,33 @@ public class AlarmCursorWrapper extends CursorWrapper {
         int hour = Integer.parseInt(timeSplit[0]);
         int minute = Integer.parseInt(timeSplit[1]);
 
-        EnumSet<WeekDay> days = EnumSet.noneOf(WeekDay.class);
+        int[] days = new int[7];
+        addDay(days, AlarmTable.Cols.SUNDAY, WeekDay.SUNDAY);
         addDay(days, AlarmTable.Cols.MONDAY, WeekDay.MONDAY);
         addDay(days, AlarmTable.Cols.TUESDAY, WeekDay.TUESDAY);
         addDay(days, AlarmTable.Cols.WEDNESDAY, WeekDay.WEDNESDAY);
         addDay(days, AlarmTable.Cols.THURSDAY, WeekDay.THURSDAY);
         addDay(days, AlarmTable.Cols.FRIDAY, WeekDay.FRIDAY);
         addDay(days, AlarmTable.Cols.SATURDAY, WeekDay.SATURDAY);
-        addDay(days, AlarmTable.Cols.SUNDAY, WeekDay.SUNDAY);
+        int[] daysReordered = WeekDay.reorderDays(days);
 
         int active = getInt(getColumnIndex(AlarmTable.Cols.ACTIVE));
 
         Alarm alarm = new Alarm(
                 UUID.fromString(uuidString),
                 hour, minute,
-                days,
+                daysReordered,
                 active == 1
         );
 
         return alarm;
     }
 
-    private void addDay(EnumSet<WeekDay> days, String columnName, WeekDay day) {
+    private void addDay(int[] days, String columnName, int day) {
         if (getInt(getColumnIndex(columnName)) == 1) {
-            days.add(day);
+            days[day - 1] = day;
+        } else {
+            days[day - 1] = -1;
         }
     }
 }
