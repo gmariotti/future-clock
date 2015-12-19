@@ -28,10 +28,12 @@ public class TimePickerFragment extends DialogFragment
 
     public static TimePickerFragment newInstance(Alarm alarm) {
         TimePickerFragment fragment = new TimePickerFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_HOUR, alarm.getHour());
-        args.putInt(ARG_MINUTE, alarm.getMinute());
-        fragment.setArguments(args);
+        if (alarm != null) {
+            Bundle args = new Bundle();
+            args.putInt(ARG_HOUR, alarm.getHour());
+            args.putInt(ARG_MINUTE, alarm.getMinute());
+            fragment.setArguments(args);
+        }
 
         return fragment;
     }
@@ -40,12 +42,16 @@ public class TimePickerFragment extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = getArguments();
-        int hour = args.getInt(ARG_HOUR);
-        int minute = args.getInt(ARG_MINUTE);
+        if (args != null) {
+            int hour = args.getInt(ARG_HOUR);
+            int minute = args.getInt(ARG_MINUTE);
 
-        TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, true);
+            TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, true);
 
-        return dialog;
+            return dialog;
+        } else {
+            return null;
+        }
     }
 
     @Override

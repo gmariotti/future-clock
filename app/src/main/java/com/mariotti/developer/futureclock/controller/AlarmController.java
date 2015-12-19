@@ -226,15 +226,17 @@ public class AlarmController {
      * @param alarm value to update
      */
     public void updateAlarm(Alarm alarm) {
-        String uuidString = alarm.getUUID().toString();
-        ContentValues values = getContentValues(alarm);
+        if (alarm != null) {
+            String uuidString = alarm.getUUID().toString();
+            ContentValues values = getContentValues(alarm);
 
-        mDatabase.update(
-                AlarmTable.NAME,
-                values,
-                AlarmTable.Cols.UUID + " = ?",
-                new String[]{uuidString}
-        );
+            mDatabase.update(
+                    AlarmTable.NAME,
+                    values,
+                    AlarmTable.Cols.UUID + " = ?",
+                    new String[]{uuidString}
+            );
+        }
     }
 
     /**

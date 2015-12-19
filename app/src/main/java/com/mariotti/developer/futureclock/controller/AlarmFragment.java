@@ -42,9 +42,11 @@ public class AlarmFragment extends Fragment {
 
     public static AlarmFragment newInstance(UUID uuid) {
         AlarmFragment alarmFragment = new AlarmFragment();
-        Bundle args = new Bundle();
-        args.putSerializable(UUID_ARG, uuid);
-        alarmFragment.setArguments(args);
+        if (uuid != null) {
+            Bundle args = new Bundle();
+            args.putSerializable(UUID_ARG, uuid);
+            alarmFragment.setArguments(args);
+        }
 
         return alarmFragment;
     }
