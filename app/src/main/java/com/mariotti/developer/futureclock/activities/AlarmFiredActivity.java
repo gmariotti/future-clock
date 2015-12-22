@@ -42,8 +42,6 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
         if (alarm != null) {
             long alarmTime = AlarmUtil.getTimeInMillisRespectTo(alarm, Calendar.getInstance());
 
-            Log.d(TAG, "UUID = " + uuid.toString());
-
             // TODO -> alarm is modified but UI of FutureClockFragment is not updated
             //Intent intentAlarmInfo = AlarmActivity.newIntent(context, uuid);
             //PendingIntent pendingIntentAlarmInfo = PendingIntent.getActivity(context, REQUEST_CODE, intentAlarmInfo, PendingIntent.FLAG_CANCEL_CURRENT);

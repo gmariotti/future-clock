@@ -56,15 +56,19 @@ public class AlarmFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
 
-        final UUID alarmUuid = (UUID) getArguments().getSerializable(UUID_ARG);
-        if (alarmUuid != null) {
-            Alarm alarm = AlarmController.getAlarmController(getActivity()).getAlarm(alarmUuid);
-            if (alarm != null) {
-                mAlarm = alarm;
+        UUID alarmUuid = null;
+        if (getArguments() != null) {
+            alarmUuid = (UUID) getArguments().getSerializable(UUID_ARG);
+            if (alarmUuid != null) {
+                Alarm alarm = AlarmController.getAlarmController(getActivity()).getAlarm(alarmUuid);
+                if (alarm != null) {
+                    mAlarm = alarm;
+                }
             }
         } else {
             mAlarm = new Alarm();
         }
+
 
         mMondayTextView = initializeDayTextView(view, R.id.alarm_textview_mon, WeekDay.MONDAY);
         mTuesdayTextView = initializeDayTextView(view, R.id.alarm_textview_tue, WeekDay.TUESDAY);
@@ -86,15 +90,16 @@ public class AlarmFragment extends Fragment {
         mSwitch.setChecked(mAlarm.isActive());
         mSwitch.setOnClickListener(v -> mAlarm.setActive(mSwitch.isChecked()));
 
+        final boolean update = alarmUuid != null ? true : false;
         mConfirmButton = (Button) view.findViewById(R.id.alarm_confirm_button);
         mConfirmButton.setOnClickListener(v -> {
-            if (alarmUuid == null) {
-                AlarmController.getAlarmController(getActivity()).addAlarm(mAlarm);
+            if (!update) {
+                AlarmController.getAlarmController(AlarmFragment.this.getActivity()).addAlarm(mAlarm);
             } else {
-                AlarmController.getAlarmController(getActivity()).updateAlarm(mAlarm);
+                AlarmController.getAlarmController(AlarmFragment.this.getActivity()).updateAlarm(mAlarm);
             }
-            getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
+            AlarmFragment.this.getActivity().setResult(Activity.RESULT_OK);
+            AlarmFragment.this.getActivity().finish();
         });
 
         return view;

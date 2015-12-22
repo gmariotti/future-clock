@@ -15,6 +15,7 @@ public class AlarmUtil {
 
     /**
      * Get the list of short name of the days of an alarm
+     *
      * @param alarm variable to consider
      * @return list of short name
      */
@@ -39,8 +40,9 @@ public class AlarmUtil {
 
     /**
      * Insert a day into the alarm
+     *
      * @param alarm variable in which insert the day
-     * @param day value to insert
+     * @param day   value to insert
      */
     public static void addDay(Alarm alarm, int day) {
         if (alarm != null) {
@@ -59,8 +61,9 @@ public class AlarmUtil {
 
     /**
      * Remove a day from an alarm
+     *
      * @param alarm variable from which remove the day
-     * @param day value to remove
+     * @param day   value to remove
      */
     public static void removeDay(Alarm alarm, int day) {
         if (alarm != null) {
@@ -79,8 +82,9 @@ public class AlarmUtil {
 
     /**
      * Check if the day is present in the alarm or not
+     *
      * @param alarm variable from which searching the day
-     * @param day value to search
+     * @param day   value to search
      * @return true if present, false otherwise
      */
     public static boolean hasDay(Alarm alarm, int day) {
@@ -101,9 +105,10 @@ public class AlarmUtil {
 
     /**
      * Get the nearest day of an alarm based on the day, hour and minute inserted
-     * @param alarm variable to compare
-     * @param day represents the day from which getting the nearest
-     * @param hour represents the hour to consider
+     *
+     * @param alarm  variable to compare
+     * @param day    represents the day from which getting the nearest
+     * @param hour   represents the hour to consider
      * @param minute represents the minute to consider
      * @return the nearest day, -1 in case of an invalid value
      */
@@ -140,7 +145,8 @@ public class AlarmUtil {
 
     /**
      * Get the time of an alarm in respect to a Calendar variable in milliseconds
-     * @param alarm variable from which getting the time
+     *
+     * @param alarm    variable from which getting the time
      * @param calendar variable to compare with the alarm
      * @return the time in milliseconds
      */
@@ -160,18 +166,21 @@ public class AlarmUtil {
                 time += (60 - minute) * 60 * 1000;
                 time += (23 - hour) * 3600 * 1000;
                 day = WeekDay.getNextDay(day);
+                Log.d(TAG, "NextDay is " + WeekDay.getShortName(day));
             } else {
                 if (minute > alarmMinute) {
                     hour++;
                     minute = 0;
                 }
-                time += (alarmHour - hour) * 3600 * 1000;
-                time += (alarmMinute - minute) * 60 * 1000;
             }
+            time += (alarmHour - hour) * 3600 * 1000;
+            time += (alarmMinute - minute) * 60 * 1000;
 
             // add the time difference based on the day to consider
             int nearestDay = getNearestDay(alarm, day, hour, minute);
+            Log.d(TAG, "Nearest day is " + WeekDay.getShortName(nearestDay));
             int dayDifference = WeekDay.getDaysDifference(day, nearestDay);
+            Log.d(TAG, "Day difference is " + dayDifference);
 
             time += dayDifference * 24 * 3600 * 1000;
 

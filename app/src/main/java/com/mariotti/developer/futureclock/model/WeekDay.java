@@ -102,7 +102,7 @@ public class WeekDay {
      */
     public static int getDaysDifference(int dayToCompare, int comparisonDay) {
         // is true if the dayToCompare is after the comparisonDay
-        if (dayToCompare > comparisonDay) {
+        if (dayToCompare < comparisonDay) {
             return 7 - comparisonDay + dayToCompare;
         } else {
             return dayToCompare - comparisonDay;

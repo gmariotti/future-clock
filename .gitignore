@@ -1,5 +1,7 @@
-.gradle
-.idea
+/local.properties
+.gradle/
+.idea/
 *.iml
-build
+build/
 *.xml
+app/src/androidTest
