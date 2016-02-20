@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controller;
+package com.mariotti.developer.futureclock.controllers;
 
 
 import android.net.Uri;
@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mariotti.developer.futureclock.model.OpenMapWeather;
+import com.mariotti.developer.futureclock.models.OpenMapWeather;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

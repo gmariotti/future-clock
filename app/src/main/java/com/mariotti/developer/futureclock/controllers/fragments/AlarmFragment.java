@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controller;
+package com.mariotti.developer.futureclock.controllers.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,8 +14,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.mariotti.developer.futureclock.R;
-import com.mariotti.developer.futureclock.model.Alarm;
-import com.mariotti.developer.futureclock.model.WeekDay;
+import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
+import com.mariotti.developer.futureclock.models.Alarm;
+import com.mariotti.developer.futureclock.models.WeekDay;
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.UUID;
@@ -60,7 +61,8 @@ public class AlarmFragment extends Fragment {
         if (getArguments() != null) {
             alarmUuid = (UUID) getArguments().getSerializable(UUID_ARG);
             if (alarmUuid != null) {
-                Alarm alarm = AlarmController.getAlarmController(getActivity()).getAlarm(alarmUuid);
+                Alarm alarm = DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+                        .getAlarm(alarmUuid);
                 if (alarm != null) {
                     mAlarm = alarm;
                 }
@@ -79,7 +81,7 @@ public class AlarmFragment extends Fragment {
         mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.SUNDAY);
 
         mTimeTextView = (TextView) view.findViewById(R.id.alarm_time_picker);
-        mTimeTextView.setText(mAlarm.getTime());
+        mTimeTextView.setText(mAlarm.getTimeAsString());
         mTimeTextView.setOnClickListener(v -> {
             TimePickerFragment dialog = TimePickerFragment.newInstance(mAlarm);
             dialog.setTargetFragment(AlarmFragment.this, REQUEST_CODE_TIME);
@@ -90,13 +92,15 @@ public class AlarmFragment extends Fragment {
         mSwitch.setChecked(mAlarm.isActive());
         mSwitch.setOnClickListener(v -> mAlarm.setActive(mSwitch.isChecked()));
 
-        final boolean update = alarmUuid != null ? true : false;
+        final boolean update = alarmUuid != null;
         mConfirmButton = (Button) view.findViewById(R.id.alarm_confirm_button);
         mConfirmButton.setOnClickListener(v -> {
             if (!update) {
-                AlarmController.getAlarmController(AlarmFragment.this.getActivity()).addAlarm(mAlarm);
+                DatabaseAlarmController.getDatabaseAlarmController(AlarmFragment.this.getActivity())
+                        .addAlarm(mAlarm);
             } else {
-                AlarmController.getAlarmController(AlarmFragment.this.getActivity()).updateAlarm(mAlarm);
+                DatabaseAlarmController.getDatabaseAlarmController(AlarmFragment.this.getActivity())
+                        .updateAlarm(mAlarm);
             }
             AlarmFragment.this.getActivity().setResult(Activity.RESULT_OK);
             AlarmFragment.this.getActivity().finish();

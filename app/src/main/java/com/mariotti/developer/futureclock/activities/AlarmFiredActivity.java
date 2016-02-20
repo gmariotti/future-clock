@@ -7,9 +7,10 @@ import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
-import com.mariotti.developer.futureclock.controller.AlarmController;
-import com.mariotti.developer.futureclock.controller.AlarmFiredFragment;
-import com.mariotti.developer.futureclock.model.Alarm;
+import com.mariotti.developer.futureclock.controllers.AlarmController;
+import com.mariotti.developer.futureclock.controllers.fragments.AlarmFiredFragment;
+import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
+import com.mariotti.developer.futureclock.models.Alarm;
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.Calendar;
@@ -38,17 +39,17 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        Alarm alarm = AlarmController.getAlarmController(context).getAlarm(uuid);
+        Alarm alarm = DatabaseAlarmController.getDatabaseAlarmController(context).getAlarm(uuid);
         if (alarm != null) {
-            long alarmTime = AlarmUtil.getTimeInMillisRespectTo(alarm, Calendar.getInstance());
+            long alarmTime = AlarmController.getAlarmController()
+                    .getNearestDayForAlarm(alarm, Calendar.getInstance())
+                    .getTimeInMillis();
 
-            // TODO -> alarm is modified but UI of FutureClockFragment is not updated
-            //Intent intentAlarmInfo = AlarmActivity.newIntent(context, uuid);
-            //PendingIntent pendingIntentAlarmInfo = PendingIntent.getActivity(context, REQUEST_CODE, intentAlarmInfo, PendingIntent.FLAG_CANCEL_CURRENT);
-            AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(alarmTime, null);
+            Intent intentAlarmInfo = FutureClockActivity.newIntent(context);
+            PendingIntent pendingIntentAlarmInfo = PendingIntent.getActivity(context, REQUEST_CODE, intentAlarmInfo, PendingIntent.FLAG_CANCEL_CURRENT);
+            AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(alarmTime, pendingIntentAlarmInfo);
             alarmManager.setAlarmClock(clockInfo, pendingIntent);
 
-            //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
         } else {
             Log.d(TAG, "No alarm set with UUID = " + uuid.toString());
         }

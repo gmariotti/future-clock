@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controller;
+package com.mariotti.developer.futureclock.controllers.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -10,18 +10,18 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.mariotti.developer.futureclock.R;
-import com.mariotti.developer.futureclock.model.Alarm;
+import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
+import com.mariotti.developer.futureclock.models.Alarm;
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.UUID;
 
 public class AlarmDeleteFragment extends DialogFragment {
+    public static final String EXTRA_DELETE_CONFIRM = "com.mariotti.developer.futureclock.controller.confirm";
     private static final String TAG = "AlarmDeleteFragment";
     private static final String ARG_UUID = "ARG_UUID";
     private static final String ARG_TIME = "ARG_TIME";
     private static final String ARG_DAYS = "ARG_DAYS";
-
-    public static final String EXTRA_DELETE_CONFIRM = "com.mariotti.developer.futureclock.controller.confirm";
 
     public AlarmDeleteFragment() {
     }
@@ -30,7 +30,7 @@ public class AlarmDeleteFragment extends DialogFragment {
         AlarmDeleteFragment fragment = new AlarmDeleteFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_UUID, alarm.getUUID());
-        args.putString(ARG_TIME, alarm.getTime());
+        args.putString(ARG_TIME, alarm.getTimeAsString());
         args.putString(ARG_DAYS, AlarmUtil.getShortDaysString(alarm));
         fragment.setArguments(args);
 
@@ -52,7 +52,8 @@ public class AlarmDeleteFragment extends DialogFragment {
                     .setMessage(getResources().getString(R.string.alarm_delete_dialog_message)
                             + " " + time + " -> " + days)
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        if (AlarmController.getAlarmController(getActivity()).deleteAlarm(uuid) == 1) {
+                        if (DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+                                .deleteAlarm(uuid) == 1) {
                             Log.d(TAG, "Alarm deleted");
                             sendResult(Activity.RESULT_OK, true);
                         } else {

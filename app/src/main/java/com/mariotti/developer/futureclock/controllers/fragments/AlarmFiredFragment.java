@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controller;
+package com.mariotti.developer.futureclock.controllers.fragments;
 
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -13,9 +13,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.mariotti.developer.futureclock.R;
-import com.mariotti.developer.futureclock.activities.AlarmFiredActivity;
-import com.mariotti.developer.futureclock.model.Alarm;
-import com.mariotti.developer.futureclock.model.OpenMapWeather;
+import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
+import com.mariotti.developer.futureclock.controllers.OpenMapWeatherFetchr;
+import com.mariotti.developer.futureclock.models.Alarm;
+import com.mariotti.developer.futureclock.models.OpenMapWeather;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -54,9 +55,10 @@ public class AlarmFiredFragment extends Fragment {
         mButton = (Button) view.findViewById(R.id.button_talk);
 
         UUID uuid = (UUID) getArguments().getSerializable(ARG_UUID);
-        Alarm alarm = AlarmController.getAlarmController(getActivity()).getAlarm(uuid);
+        Alarm alarm = DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+                .getAlarm(uuid);
 
-        mAlarmFiredTextView.setText("Fired alarm at time " + alarm.getTime());
+        mAlarmFiredTextView.setText("Fired alarm at time " + alarm.getTimeAsString());
 
         setNextAlarm();
 
@@ -106,7 +108,7 @@ public class AlarmFiredFragment extends Fragment {
     }
 
     private void setNextAlarm() {
-        AlarmController controller = AlarmController.getAlarmController(getActivity());
+        /*UIAlarmController controller = UIAlarmController.getAlarmController(getActivity());
         Alarm nextAlarm = controller.getNextAlarm();
         if (nextAlarm != null) {
             AlarmFiredActivity.setActivityAlarm(getActivity(), nextAlarm.getUUID());
@@ -114,6 +116,6 @@ public class AlarmFiredFragment extends Fragment {
         } else {
             AlarmFiredActivity.cancelAlarm(getActivity());
             Log.d(TAG, "No other alarms");
-        }
+        }*/
     }
 }

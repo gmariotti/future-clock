@@ -1,24 +1,22 @@
-package com.mariotti.developer.futureclock.model;
-
-import android.util.ArraySet;
+package com.mariotti.developer.futureclock.models;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represent the days of the week, considering Sunday as the first day of the week.
  * Day's value is equal to the value of the Calendar class
  */
 public class WeekDay {
-    public static final int SUNDAY = 1;
-    public static final int MONDAY = 2;
-    public static final int TUESDAY = 3;
-    public static final int WEDNESDAY = 4;
-    public static final int THURSDAY = 5;
-    public static final int FRIDAY = 6;
-    public static final int SATURDAY = 7;
+    public static final int SUNDAY = Calendar.SUNDAY;
+    public static final int MONDAY = Calendar.MONDAY;
+    public static final int TUESDAY = Calendar.TUESDAY;
+    public static final int WEDNESDAY = Calendar.WEDNESDAY;
+    public static final int THURSDAY = Calendar.THURSDAY;
+    public static final int FRIDAY = Calendar.FRIDAY;
+    public static final int SATURDAY = Calendar.SATURDAY;
 
     // TODO -> return string based on system language
     public static String getShortName(int day) {
@@ -64,13 +62,7 @@ public class WeekDay {
         }
     }
 
-    /**
-     * Return the next day based on the value passed as an argument
-     *
-     * @param day
-     * @return the next day, -1 if a invalid day is inserted
-     */
-    public static int getNextDay(int day) {
+    public static int getNextDay(int day) throws Exception {
         switch (day) {
             case SUNDAY:
                 return MONDAY;
@@ -87,19 +79,11 @@ public class WeekDay {
             case SATURDAY:
                 return SUNDAY;
             default:
-                return -1;
+                throw new Exception("Invalid day inserted");
         }
     }
 
-    /**
-     * Get the difference in days between two day
-     * Example: Sunday to Tuesday -> 3 - 1 = 2 days difference
-     * Example: Saturday to Tuesday -> 7 - 7 + 3 = 3 days difference
-     *
-     * @param dayToCompare
-     * @param comparisonDay
-     * @return
-     */
+    // TODO - to delete
     public static int getDaysDifference(int dayToCompare, int comparisonDay) {
         // is true if the dayToCompare is after the comparisonDay
         if (dayToCompare < comparisonDay) {
@@ -109,15 +93,7 @@ public class WeekDay {
         }
     }
 
-    /**
-     * Compares two days in respect to a pivot day.
-     *
-     * @param day           first day of comparison
-     * @param comparisonDay second day of comparison
-     * @param pivotDay      pivot to which confront
-     * @return -1 if day occurs before comparisonDay, 1 if it occurs after and
-     * 0 if they are the same day
-     */
+    // TODO - delete
     public static int compare(int day, int comparisonDay, int pivotDay) {
         // case in which day is before comparisonDay
         if (day < comparisonDay) {

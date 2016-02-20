@@ -1,14 +1,11 @@
-package com.mariotti.developer.futureclock.model;
+package com.mariotti.developer.futureclock.models;
 
 import android.util.Log;
 
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.Calendar;
-import java.util.EnumSet;
 import java.util.UUID;
-
-import static com.mariotti.developer.futureclock.model.WeekDay.*;
 
 public class Alarm {
     private static final String TAG = "Alarm";
@@ -17,30 +14,29 @@ public class Alarm {
     private int mHour;
     private int mMinute;
     private int mDays[];
+    private String timezone;
     private boolean mActive;
 
-    /**
-     * Default constructor, mUUID is generated randomly, time is set to 00:00,
-     * while mDays is an empty EnumSet
-     */
     public Alarm() {
-        this.mUUID = UUID.randomUUID();
-        this.mHour = 0;
-        this.mMinute = 0;
-        mDays = new int[0];
-        mActive = false;
+        mUUID = UUID.randomUUID();
+        mHour = 0;
+        mMinute = 0;
     }
 
-    /**
-     * Set the alarm based on the arguments.
-     *
-     * @param UUID   alarm identifier
-     * @param hour   hour of the alarm
-     * @param minute minute of the alarm
-     * @param days   list of days in which the alarm is enabled
-     * @throws IllegalArgumentException if hour and/or minute is a wrong value,
-     *                                  or days.length is greater than 7
-     */
+    public Alarm(UUID uuid, Calendar time, int days[], boolean active) throws Exception {
+        if (time == null || uuid == null) {
+            throw new Exception("Time and/or UUID are null");
+        }
+
+        mUUID = uuid;
+        mHour = time.get(Calendar.HOUR_OF_DAY);
+        mMinute = time.get(Calendar.MINUTE);
+        setDays(days);
+        timezone = time.getTimeZone().getDisplayName();
+        mActive = active;
+    }
+
+    // TODO - to delete
     public Alarm(UUID UUID, int hour, int minute, int[] days, boolean active)
             throws IllegalArgumentException {
         // Throw an exception if an illegal time is inserted
@@ -65,7 +61,7 @@ public class Alarm {
         mActive = active;
     }
 
-    public String getTime() {
+    public String getTimeAsString() {
         String hour = mHour < 10 ? "0" + mHour : Integer.toString(mHour);
         String minute = mMinute < 10 ? "0" + mMinute : Integer.toString(mMinute);
         String time = hour + ":" + minute;
@@ -77,23 +73,17 @@ public class Alarm {
 
     @Override
     public String toString() {
-        return "Alarm " + getTime() + " active on " + AlarmUtil.getShortDaysString(this);
+        return "Alarm " + getTimeAsString() + " active on " + AlarmUtil.getShortDaysString(this);
     }
 
-    /**
-     * Get UUID
-     *
-     * @return UUID
-     */
+    /********************
+    Getter and Setter area
+     ********************/
+
     public UUID getUUID() {
         return mUUID;
     }
 
-    /**
-     * Get the hour
-     *
-     * @return hour
-     */
     public int getHour() {
         return mHour;
     }
@@ -102,11 +92,6 @@ public class Alarm {
         mHour = hour;
     }
 
-    /**
-     * Get the minute
-     *
-     * @return minute
-     */
     public int getMinute() {
         return mMinute;
     }
@@ -115,11 +100,6 @@ public class Alarm {
         mMinute = minute;
     }
 
-    /**
-     * Get Array of days
-     *
-     * @return array of days
-     */
     public int[] getDays() {
         return mDays;
     }
@@ -128,11 +108,6 @@ public class Alarm {
         mDays = WeekDay.reorderDays(days);
     }
 
-    /**
-     * Check if the alarm is active or not
-     *
-     * @return true if active, false otherwise
-     */
     public boolean isActive() {
         return mActive;
     }
@@ -140,4 +115,5 @@ public class Alarm {
     public void setActive(boolean active) {
         mActive = active;
     }
+
 }
