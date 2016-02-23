@@ -17,6 +17,7 @@ import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
 import com.mariotti.developer.futureclock.controllers.OpenMapWeatherFetchr;
 import com.mariotti.developer.futureclock.models.Alarm;
 import com.mariotti.developer.futureclock.models.OpenMapWeather;
+import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -58,7 +59,8 @@ public class AlarmFiredFragment extends Fragment {
         Alarm alarm = DatabaseAlarmController.getDatabaseAlarmController(getActivity())
                 .getAlarm(uuid);
 
-        mAlarmFiredTextView.setText("Fired alarm at time " + alarm.getTimeAsString());
+        mAlarmFiredTextView.setText("Fired alarm at time " +
+                AlarmUtil.getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute()));
 
         setNextAlarm();
 

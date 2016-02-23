@@ -16,7 +16,7 @@ public class AlarmDbSchema {
             public static final String SATURDAY = "saturday";
             public static final String SUNDAY = "sunday";
 
-            private static final String TIMEZONE = "timezone";
+            public static final String TIMEZONE = "timezone";
             public static final String ACTIVE = "active";
         }
     }

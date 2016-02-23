@@ -29,8 +29,8 @@ public class AlarmDeleteFragment extends DialogFragment {
     public static AlarmDeleteFragment newInstance(Alarm alarm) {
         AlarmDeleteFragment fragment = new AlarmDeleteFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_UUID, alarm.getUUID());
-        args.putString(ARG_TIME, alarm.getTimeAsString());
+        args.putSerializable(ARG_UUID, alarm.getUuid());
+        args.putString(ARG_TIME, AlarmUtil.getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute()));
         args.putString(ARG_DAYS, AlarmUtil.getShortDaysString(alarm));
         fragment.setArguments(args);
 
@@ -52,11 +52,12 @@ public class AlarmDeleteFragment extends DialogFragment {
                     .setMessage(getResources().getString(R.string.alarm_delete_dialog_message)
                             + " " + time + " -> " + days)
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        if (DatabaseAlarmController.getDatabaseAlarmController(getActivity())
-                                .deleteAlarm(uuid) == 1) {
+                        try {
+                            DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+                                    .deleteAlarm(uuid);
                             Log.d(TAG, "Alarm deleted");
                             sendResult(Activity.RESULT_OK, true);
-                        } else {
+                        } catch (Exception e) {
                             Log.d(TAG, "Error in deleting alarm");
                             sendResult(Activity.RESULT_CANCELED, false);
                         }

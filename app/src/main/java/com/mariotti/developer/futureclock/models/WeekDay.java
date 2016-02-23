@@ -118,6 +118,7 @@ public class WeekDay {
         }
     }
 
+    // TODO - evaluate use of a Set instead of a List
     public static int[] reorderDays(int[] days) {
         List<Integer> list = new ArrayList<>();
 

@@ -9,7 +9,6 @@ import com.mariotti.developer.futureclock.models.Alarm;
 import com.mariotti.developer.futureclock.models.WeekDay;
 import com.mariotti.developer.futureclock.models.database.AlarmBaseHelper;
 import com.mariotti.developer.futureclock.models.database.AlarmCursorWrapper;
-import com.mariotti.developer.futureclock.models.database.AlarmDbSchema;
 import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTable;
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 
@@ -18,15 +17,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class DatabaseAlarmController {
-    private static final String TAG = "DatabaseAlarmController";
     private static DatabaseAlarmController sDatabaseAlarmController;
 
-    private Context mContext;
     private SQLiteDatabase mDatabase;
 
     private DatabaseAlarmController(Context context) {
-        mContext = context.getApplicationContext();
-        mDatabase = new AlarmBaseHelper(mContext)
+        mDatabase = new AlarmBaseHelper(context.getApplicationContext())
                 .getWritableDatabase();
     }
 
@@ -37,15 +33,46 @@ public class DatabaseAlarmController {
         return sDatabaseAlarmController;
     }
 
-    public void addAlarm(Alarm alarm) {
-        ContentValues values = getContentValues(alarm);
+    public void addAlarm(Alarm alarm) throws Exception {
+        if (alarm != null) {
+            ContentValues values = getContentValues(alarm);
 
-        mDatabase.insert(AlarmDbSchema.AlarmTable.NAME, null, values);
+            mDatabase.beginTransaction();
+            try {
+                long rowID = mDatabase.insert(AlarmTable.NAME, null, values);
+                if (rowID == -1) {
+                    throw new Exception("Error inserting alarm");
+                }
+                mDatabase.setTransactionSuccessful();
+            } finally {
+                mDatabase.endTransaction();
+            }
+        }
+    }
+
+    private ContentValues getContentValues(Alarm alarm) {
+        ContentValues values = new ContentValues();
+        values.put(AlarmTable.Cols.UUID, alarm.getUuid().toString());
+        String time = AlarmUtil.getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute());
+        values.put(AlarmTable.Cols.TIME, time);
+
+        int days[] = alarm.getDays();
+        values.put(AlarmTable.Cols.MONDAY, AlarmUtil.hasDay(days, WeekDay.MONDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.TUESDAY, AlarmUtil.hasDay(days, WeekDay.TUESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.WEDNESDAY, AlarmUtil.hasDay(days, WeekDay.WEDNESDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.THURSDAY, AlarmUtil.hasDay(days, WeekDay.THURSDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.FRIDAY, AlarmUtil.hasDay(days, WeekDay.FRIDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SATURDAY, AlarmUtil.hasDay(days, WeekDay.SATURDAY) ? 1 : 0);
+        values.put(AlarmTable.Cols.SUNDAY, AlarmUtil.hasDay(days, WeekDay.SUNDAY) ? 1 : 0);
+
+        values.put(AlarmTable.Cols.TIMEZONE, alarm.getTimezone());
+        values.put(AlarmTable.Cols.ACTIVE, alarm.getActive() ? 1 : 0);
+        return values;
     }
 
     public Alarm getAlarm(UUID id) {
         AlarmCursorWrapper cursorWrapper = queryAlarms(
-                AlarmDbSchema.AlarmTable.Cols.UUID + " = ?",
+                AlarmTable.Cols.UUID + " = ?",
                 new String[]{id.toString()}
         );
 
@@ -61,61 +88,6 @@ public class DatabaseAlarmController {
         }
     }
 
-    public void updateAlarm(Alarm alarm) {
-        if (alarm != null) {
-            String uuidString = alarm.getUUID().toString();
-            ContentValues values = getContentValues(alarm);
-
-            mDatabase.update(
-                    AlarmTable.NAME,
-                    values,
-                    AlarmTable.Cols.UUID + " = ?",
-                    new String[]{uuidString}
-            );
-        }
-    }
-
-    public int deleteAlarm(UUID uuid) {
-        return mDatabase.delete(
-                AlarmTable.NAME,
-                AlarmTable.Cols.UUID + " = ?",
-                new String[]{uuid.toString()}
-        );
-    }
-
-    public List<Alarm> getAlarms() {
-        AlarmCursorWrapper cursorWrapper = queryAlarms(null, null);
-        List<Alarm> alarms = createListFromCursorWrapper(cursorWrapper);
-
-        return alarms;
-    }
-
-    public List<Alarm> getActiveAlarms() {
-        AlarmCursorWrapper cursorWrapper = queryAlarms(
-                AlarmTable.Cols.ACTIVE + " = 1",
-                null
-        );
-        List<Alarm> alarms = createListFromCursorWrapper(cursorWrapper);
-
-        return alarms;
-    }
-
-    private ContentValues getContentValues(Alarm alarm) {
-        ContentValues values = new ContentValues();
-        values.put(AlarmTable.Cols.UUID, alarm.getUUID().toString());
-        String time = alarm.getHour() + ":" + alarm.getMinute();
-        values.put(AlarmTable.Cols.TIME, time);
-        values.put(AlarmTable.Cols.MONDAY, AlarmUtil.hasDay(alarm, WeekDay.MONDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.TUESDAY, AlarmUtil.hasDay(alarm, WeekDay.TUESDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.WEDNESDAY, AlarmUtil.hasDay(alarm, WeekDay.WEDNESDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.THURSDAY, AlarmUtil.hasDay(alarm, WeekDay.THURSDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.FRIDAY, AlarmUtil.hasDay(alarm, WeekDay.FRIDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.SATURDAY, AlarmUtil.hasDay(alarm, WeekDay.SATURDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.SUNDAY, AlarmUtil.hasDay(alarm, WeekDay.SUNDAY) ? 1 : 0);
-        values.put(AlarmTable.Cols.ACTIVE, alarm.isActive() ? 1 : 0);
-        return values;
-    }
-
     private AlarmCursorWrapper queryAlarms(String whereClause, String[] whereArgs) {
         Cursor cursor = mDatabase.query(
                 AlarmTable.NAME,
@@ -128,6 +100,53 @@ public class DatabaseAlarmController {
         );
 
         return new AlarmCursorWrapper(cursor);
+    }
+
+    public void updateAlarm(Alarm alarm) throws Exception {
+        if (alarm != null) {
+            String uuidString = alarm.getUuid().toString();
+            ContentValues values = getContentValues(alarm);
+
+            mDatabase.beginTransaction();
+            try {
+                int numRowsModified = mDatabase.update(
+                        AlarmTable.NAME,
+                        values,
+                        AlarmTable.Cols.UUID + " = ?",
+                        new String[]{uuidString}
+                );
+                if (numRowsModified != 1) {
+                    throw new Exception("Error updating alarm " + uuidString);
+                }
+                mDatabase.setTransactionSuccessful();
+            } finally {
+                mDatabase.endTransaction();
+            }
+        }
+    }
+
+    public void deleteAlarm(UUID uuid) throws Exception {
+        mDatabase.beginTransaction();
+        try {
+            int numRowsDeleted = mDatabase.delete(
+                    AlarmTable.NAME,
+                    AlarmTable.Cols.UUID + " = ?",
+                    new String[]{uuid.toString()}
+            );
+            if (numRowsDeleted != 1) {
+                throw new Exception("Error delete alarm " + uuid.toString());
+            }
+            mDatabase.setTransactionSuccessful();
+        } finally {
+            mDatabase.endTransaction();
+        }
+    }
+
+    public List<Alarm> getAlarms() {
+        AlarmCursorWrapper cursorWrapper = queryAlarms(null, null);
+        List<Alarm> alarms = createListFromCursorWrapper(cursorWrapper);
+
+        return alarms;
     }
 
     private List<Alarm> createListFromCursorWrapper(AlarmCursorWrapper cursorWrapper) {
@@ -146,4 +165,13 @@ public class DatabaseAlarmController {
         return alarms;
     }
 
+    public List<Alarm> getActiveAlarms() {
+        AlarmCursorWrapper cursorWrapper = queryAlarms(
+                AlarmTable.Cols.ACTIVE + " = 1",
+                null
+        );
+        List<Alarm> alarms = createListFromCursorWrapper(cursorWrapper);
+
+        return alarms;
+    }
 }

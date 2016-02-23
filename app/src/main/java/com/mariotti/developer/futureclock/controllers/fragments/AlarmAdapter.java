@@ -72,20 +72,24 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmHolder>
 
         public void bindAlarm(final Alarm alarm) {
             mAlarm = alarm;
-            mTimeTextView.setText(mAlarm.getTimeAsString());
+            mTimeTextView.setText(AlarmUtil.getHourAndMinuteAsString(mAlarm.getHour(), mAlarm.getMinute()));
             mDaysTextView.setText(AlarmUtil.getShortDaysString(mAlarm));
-            mActiveSwitch.setChecked(mAlarm.isActive());
+            mActiveSwitch.setChecked(mAlarm.getActive());
 
             mActiveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 mAlarm.setActive(isChecked);
-                DatabaseAlarmController.getDatabaseAlarmController(mAdapter.mFragment.getActivity())
-                        .updateAlarm(alarm);
+                try {
+                    DatabaseAlarmController.getDatabaseAlarmController(mAdapter.mFragment.getActivity())
+                            .updateAlarm(alarm);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             });
         }
 
         @Override
         public void onClick(View v) {
-            mAdapter.mFragment.modifyAlarm(mAlarm.getUUID());
+            mAdapter.mFragment.modifyAlarm(mAlarm.getUuid());
         }
 
         @Override

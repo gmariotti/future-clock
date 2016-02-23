@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 apply plugin: 'me.tatarka.retrolambda'
 
 android {
@@ -25,20 +26,17 @@ android {
     }
 }
 
-ext {
-    supportLibVersion = '23.1.1'
-}
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.google.code.gson:gson:2.4'
-    compile "com.android.support:design:${supportLibVersion}"
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile "com.android.support:cardview-v7:${supportLibVersion}"
-    compile 'io.reactivex:rxjava:1.0.15'
-    compile 'io.reactivex:rxandroid:1.0.1'
+    compile "com.android.support:design:$support_version"
+    compile "com.android.support:appcompat-v7:$support_version"
+    compile "com.android.support:recyclerview-v7:$support_version"
+    compile "com.android.support:cardview-v7:$support_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "io.reactivex:rxjava:$rxjava_version"
+    compile "io.reactivex:rxandroid:$rxandroid_version"
+    compile "com.google.code.gson:gson:$gson_version"
 }
 
 retrolambda {

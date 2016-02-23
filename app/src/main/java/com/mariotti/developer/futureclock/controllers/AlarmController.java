@@ -1,18 +1,11 @@
 package com.mariotti.developer.futureclock.controllers;
 
-import android.util.Log;
-
 import com.mariotti.developer.futureclock.models.Alarm;
-import com.mariotti.developer.futureclock.models.WeekDay;
-import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 
 public class AlarmController {
-    private static final String TAG = "AlarmController";
-
     private static AlarmController sAlarmController;
 
     private AlarmController() {
@@ -67,7 +60,9 @@ public class AlarmController {
         Calendar dayToReturn = (Calendar) day.clone();
         dayToReturn.set(Calendar.HOUR_OF_DAY, alarm.getHour());
         dayToReturn.set(Calendar.MINUTE, alarm.getMinute());
-        // TODO - set timezone
+        if (!alarm.getTimezone().equals(dayToReturn.getTimeZone().getDisplayName())) {
+            // TODO - modify timezone accordingly
+        }
         correctWeekDay(day, dayToReturn);
 
         return dayToReturn;

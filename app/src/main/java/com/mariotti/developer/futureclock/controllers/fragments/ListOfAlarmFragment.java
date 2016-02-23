@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,17 +16,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import com.mariotti.developer.futureclock.R;
 import com.mariotti.developer.futureclock.activities.AlarmActivity;
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
 import com.mariotti.developer.futureclock.models.Alarm;
-import com.mariotti.developer.futureclock.util.AlarmUtil;
 
 import java.util.List;
 import java.util.UUID;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class ListOfAlarmFragment extends AdapterFragment {
     private static final String TAG = "ListOfAlarmFragment";
@@ -63,7 +64,7 @@ public class ListOfAlarmFragment extends AdapterFragment {
         mAlarmRecyclerView = (RecyclerView) view.findViewById(R.id.alarms_recycler_view);
         mAlarmRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        updateAlarmListUI();
+        updateRecyclerViewList();
 
         return view;
     }
@@ -76,7 +77,7 @@ public class ListOfAlarmFragment extends AdapterFragment {
 
         switch (requestCode) {
             case REQUEST_CODE_ALARM_MANAGEMENT:
-                updateAlarmListUI();
+                updateRecyclerViewList();
                 break;
             case REQUEST_CODE_DELETE_ALARM:
                 manageAlarmDeletion(data);
@@ -88,7 +89,7 @@ public class ListOfAlarmFragment extends AdapterFragment {
     private void manageAlarmDeletion(Intent data) {
         boolean confirm = data.getBooleanExtra(AlarmDeleteFragment.EXTRA_DELETE_CONFIRM, false);
         if (confirm) {
-            updateAlarmListUI();
+            updateRecyclerViewList();
         } else {
             Snackbar.make(getView(), "Error deleting alarm", Snackbar.LENGTH_LONG)
                     .show();
@@ -114,8 +115,42 @@ public class ListOfAlarmFragment extends AdapterFragment {
         }
     }
 
-    private void updateAlarmListUI() {
-        DatabaseAlarmController controller = DatabaseAlarmController.getDatabaseAlarmController(getActivity());
+    private void updateRecyclerViewList() {
+        Observable.create(new Observable.OnSubscribe<List<Alarm>>() {
+            @Override
+            public void call(Subscriber<? super List<Alarm>> subscriber) {
+                DatabaseAlarmController controller = DatabaseAlarmController.getDatabaseAlarmController(getActivity());
+                List<Alarm> alarms = controller.getAlarms();
+                subscriber.onNext(alarms);
+                subscriber.onCompleted();
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<List<Alarm>>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG, "onCompleted");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "onError");
+                    }
+
+                    @Override
+                    public void onNext(List<Alarm> alarms) {
+                        if (mAdapter == null) {
+                            mAdapter = new AlarmAdapter(ListOfAlarmFragment.this, alarms);
+                            mAlarmRecyclerView.setAdapter(mAdapter);
+                        } else {
+                            mAdapter.setAlarms(alarms);
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+
+        /*DatabaseAlarmController controller = DatabaseAlarmController.getDatabaseAlarmController(getActivity());
         List<Alarm> alarms = controller.getAlarms();
 
         if (mAdapter == null) {
@@ -124,7 +159,7 @@ public class ListOfAlarmFragment extends AdapterFragment {
         } else {
             mAdapter.setAlarms(alarms);
             mAdapter.notifyDataSetChanged();
-        }
+        }*/
     }
 
     @Override
