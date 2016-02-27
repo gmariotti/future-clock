@@ -39,7 +39,7 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        Alarm alarm = DatabaseAlarmController.getDatabaseAlarmController(context).getAlarm(uuid);
+        Alarm alarm = DatabaseAlarmController.Companion.getInstance(context).getAlarm(uuid);
         if (alarm != null) {
             long alarmTime = AlarmController.getAlarmController()
                     .getNearestDayForAlarm(alarm, Calendar.getInstance())

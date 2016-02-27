@@ -119,8 +119,8 @@ public class ListOfAlarmFragment extends AdapterFragment {
         Observable.create(new Observable.OnSubscribe<List<Alarm>>() {
             @Override
             public void call(Subscriber<? super List<Alarm>> subscriber) {
-                DatabaseAlarmController controller = DatabaseAlarmController.getDatabaseAlarmController(getActivity());
-                List<Alarm> alarms = controller.getAlarms();
+                List<Alarm> alarms = DatabaseAlarmController.Companion.getInstance(getActivity())
+                        .getAlarms();
                 subscriber.onNext(alarms);
                 subscriber.onCompleted();
             }

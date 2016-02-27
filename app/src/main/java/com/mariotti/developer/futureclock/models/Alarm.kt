@@ -6,7 +6,7 @@ class Alarm(val uuid: UUID = UUID.randomUUID(), hour: Int = 0, minute: Int = 0, 
             val timezone: String, var active: Boolean = false) {
     val hour: Int
     val minute: Int
-    val days: IntArray?
+    val days: IntArray
 
     // valid only with primary constructor
     init {

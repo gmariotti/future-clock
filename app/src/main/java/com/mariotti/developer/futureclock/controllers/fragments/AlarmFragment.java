@@ -87,16 +87,16 @@ public class AlarmFragment extends Fragment {
         mConfirmButton.setOnClickListener(v -> {
             // TODO - use RxJava
             try {
-                DatabaseAlarmController controller =
-                        DatabaseAlarmController.getDatabaseAlarmController(getActivity());
+                DatabaseAlarmController databaseAlarmController =
+                        DatabaseAlarmController.Companion.getInstance(getActivity());
                 Calendar day = Calendar.getInstance();
                 day.set(Calendar.HOUR_OF_DAY, mHour);
                 day.set(Calendar.MINUTE, mMinute);
                 Alarm alarmToInsert = new Alarm(mUUID, day, mDays, mActive);
                 if (!checkIfUpdateOperation()) {
-                    controller.addAlarm(alarmToInsert);
+                    databaseAlarmController.addAlarm(alarmToInsert);
                 } else {
-                    controller.updateAlarm(alarmToInsert);
+                    databaseAlarmController.updateAlarm(alarmToInsert);
                 }
                 AlarmFragment.this.getActivity().setResult(Activity.RESULT_OK);
                 AlarmFragment.this.getActivity().finish();
@@ -114,7 +114,7 @@ public class AlarmFragment extends Fragment {
         if (checkIfUpdateOperation()) {
             UUID alarmUuid = (UUID) getArguments().getSerializable(UUID_ARG);
             // TODO - use RxJava
-            alarmToUpdate = DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+            alarmToUpdate = DatabaseAlarmController.Companion.getInstance(getActivity())
                     .getAlarm(alarmUuid);
         }
 
@@ -127,13 +127,13 @@ public class AlarmFragment extends Fragment {
     }
 
     private void initializeDaysListTextView(View view) {
-        mMondayTextView = initializeDayTextView(view, R.id.alarm_textview_mon, WeekDay.MONDAY);
-        mTuesdayTextView = initializeDayTextView(view, R.id.alarm_textview_tue, WeekDay.TUESDAY);
-        mWednesdayTextView = initializeDayTextView(view, R.id.alarm_textview_wed, WeekDay.WEDNESDAY);
-        mThursdayTextView = initializeDayTextView(view, R.id.alarm_textview_thu, WeekDay.THURSDAY);
-        mFridayTextView = initializeDayTextView(view, R.id.alarm_textview_fri, WeekDay.FRIDAY);
-        mSaturdayTextView = initializeDayTextView(view, R.id.alarm_textview_sat, WeekDay.SATURDAY);
-        mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.SUNDAY);
+        mMondayTextView = initializeDayTextView(view, R.id.alarm_textview_mon, WeekDay.INSTANCE.getMONDAY());
+        mTuesdayTextView = initializeDayTextView(view, R.id.alarm_textview_tue, WeekDay.INSTANCE.getTUESDAY());
+        mWednesdayTextView = initializeDayTextView(view, R.id.alarm_textview_wed, WeekDay.INSTANCE.getWEDNESDAY());
+        mThursdayTextView = initializeDayTextView(view, R.id.alarm_textview_thu, WeekDay.INSTANCE.getTHURSDAY());
+        mFridayTextView = initializeDayTextView(view, R.id.alarm_textview_fri, WeekDay.INSTANCE.getFRIDAY());
+        mSaturdayTextView = initializeDayTextView(view, R.id.alarm_textview_sat, WeekDay.INSTANCE.getSATURDAY());
+        mSundayTextView = initializeDayTextView(view, R.id.alarm_textview_sun, WeekDay.INSTANCE.getSUNDAY());
     }
 
     private TextView initializeDayTextView(View view, int idTextView, final int day) {

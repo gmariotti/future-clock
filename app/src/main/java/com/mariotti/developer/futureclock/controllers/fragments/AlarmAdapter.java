@@ -79,7 +79,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmHolder>
             mActiveSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 mAlarm.setActive(isChecked);
                 try {
-                    DatabaseAlarmController.getDatabaseAlarmController(mAdapter.mFragment.getActivity())
+                    DatabaseAlarmController.Companion.getInstance(mFragment.getActivity())
                             .updateAlarm(alarm);
                 } catch (Exception e) {
                     e.printStackTrace();

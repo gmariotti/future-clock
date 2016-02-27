@@ -53,7 +53,7 @@ public class AlarmDeleteFragment extends DialogFragment {
                             + " " + time + " -> " + days)
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                         try {
-                            DatabaseAlarmController.getDatabaseAlarmController(getActivity())
+                            DatabaseAlarmController.Companion.getInstance(getActivity())
                                     .deleteAlarm(uuid);
                             Log.d(TAG, "Alarm deleted");
                             sendResult(Activity.RESULT_OK, true);
