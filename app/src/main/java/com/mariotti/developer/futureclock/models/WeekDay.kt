@@ -12,6 +12,7 @@ object WeekDay {
     val THURSDAY = Calendar.THURSDAY
     val FRIDAY = Calendar.FRIDAY
     val SATURDAY = Calendar.SATURDAY
+    val WEEK: IntArray = intArrayOf(SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY)
 
 
     // TODO -> return string based on system language

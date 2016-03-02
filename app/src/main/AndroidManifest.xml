@@ -22,18 +22,18 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.AlarmActivity"
+            android:name=".activities.AlarmCreateOrUpdateActivity"
             android:parentActivityName=".activities.FutureClockActivity">
         </activity>
-        <activity android:name=".activities.AlarmFiredActivity">
-        </activity>
+        <!--<activity android:name=".activities.AlarmFiredActivity">
+        </activity>-->
 
-        <receiver
+        <!--<receiver
             android:name=".broadcast.StartupReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-        </receiver>
+        </receiver>-->
     </application>
 
 </manifest>

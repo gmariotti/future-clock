@@ -50,7 +50,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmHolder>
      * ViewHolder definition
      *********************/
     public class AlarmHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, View.OnLongClickListener {
+            implements View.OnClickListener {
         private AlarmAdapter mAdapter;
 
         private TextView mTimeTextView;
@@ -63,7 +63,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmHolder>
             super(itemView);
             mAdapter = alarmAdapter;
             itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
 
             mTimeTextView = (TextView) itemView.findViewById(R.id.list_item_time);
             mDaysTextView = (TextView) itemView.findViewById(R.id.list_item_days);
@@ -90,14 +89,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.AlarmHolder>
         @Override
         public void onClick(View v) {
             mAdapter.mFragment.modifyAlarm(mAlarm.getUuid());
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            // show a dialog to delete the current alarm
-            mAdapter.mFragment.deleteAlarm(mAlarm);
-
-            return true;
         }
     }
 }

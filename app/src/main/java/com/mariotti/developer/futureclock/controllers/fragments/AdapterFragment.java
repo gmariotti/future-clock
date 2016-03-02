@@ -7,7 +7,5 @@ import com.mariotti.developer.futureclock.models.Alarm;
 import java.util.UUID;
 
 public abstract class AdapterFragment extends Fragment {
-    public abstract void modifyAlarm(UUID alarmUuid);
-
-    public abstract void deleteAlarm(Alarm alarm);
+    public abstract void modifyAlarm(UUID alarmUUID);
 }
