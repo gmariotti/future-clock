@@ -16,7 +16,7 @@
             android:id="@+id/list_item_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:padding="8dp"
             android:textSize="20sp"
             android:textStyle="bold"
             tools:text="00:00" />
@@ -25,7 +25,7 @@
             android:id="@+id/list_item_days"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:padding="8dp"
             android:textSize="15sp"
             android:textStyle="bold"
             tools:text="Mon, Tue, Wed" />
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <Switch
             android:id="@+id/list_item_switch"

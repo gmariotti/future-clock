@@ -3,6 +3,7 @@ package com.mariotti.developer.futureclock.models.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTable
 
 class AlarmBaseHelper(context: Context) : SQLiteOpenHelper(context, AlarmBaseHelper.DATABASE_NAME, null, AlarmBaseHelper.VERSION) {
 
@@ -12,19 +13,12 @@ class AlarmBaseHelper(context: Context) : SQLiteOpenHelper(context, AlarmBaseHel
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("create table " + AlarmDbSchema.AlarmTable.NAME + "(" +
-                "_id integer primary key autoincrement, " +
-                AlarmDbSchema.AlarmTable.Cols.UUID + ", " +
-                AlarmDbSchema.AlarmTable.Cols.TIME + ", " +
-                AlarmDbSchema.AlarmTable.Cols.MONDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.TUESDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.WEDNESDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.THURSDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.FRIDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.SATURDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.SUNDAY + ", " +
-                AlarmDbSchema.AlarmTable.Cols.ACTIVE +
-                ")")
+        db.execSQL("create table ${AlarmTable.NAME}(_id integer primary key autoincrement, " +
+                "${AlarmTable.Cols.UUID}, ${AlarmTable.Cols.TIME}, ${AlarmTable.Cols.MONDAY}, " +
+                "${AlarmTable.Cols.TUESDAY}, ${AlarmTable.Cols.WEDNESDAY}, ${AlarmTable.Cols.THURSDAY}, " +
+                "${AlarmTable.Cols.FRIDAY}, ${AlarmTable.Cols.SATURDAY}, ${AlarmTable.Cols.SUNDAY}, " +
+                "${AlarmTable.Cols.TIMEZONE}, ${AlarmTable.Cols.ACTIVE})"
+        )
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

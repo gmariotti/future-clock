@@ -3,18 +3,23 @@ package com.mariotti.developer.futureclock.activities
 import android.content.Context
 import android.content.Intent
 import android.support.v4.app.Fragment
+import android.util.Log
 import com.mariotti.developer.futureclock.controllers.fragments.AlarmCreateOrUpdateFragment
 import java.util.*
 
 class AlarmCreateOrUpdateActivity : SingleFragmentActivity() {
 
     companion object {
+        private val TAG = "AlarmCreateOrUpdateActivity"
         private val EXTRA_ALARM_UUID = "com.mariotti.developer.futureclock.activities.alarm_uuid"
 
         fun newIntent(packageContext: Context, alarmUUID: UUID?): Intent {
             val intent = Intent(packageContext, AlarmCreateOrUpdateActivity::class.java)
 
-            alarmUUID?.let { intent.putExtra(EXTRA_ALARM_UUID, alarmUUID) }
+            alarmUUID?.let {
+                intent.putExtra(EXTRA_ALARM_UUID, alarmUUID)
+                Log.d(TAG, "UUID is $alarmUUID")
+            }
 
             return intent
         }

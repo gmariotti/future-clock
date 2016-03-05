@@ -2,6 +2,7 @@ package com.mariotti.developer.futureclock.controllers.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -41,7 +42,7 @@ public class AlarmDeleteFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments() != null) {
-            UUID uuid = (UUID) getArguments().getSerializable(ARG_UUID);
+            final UUID uuid = (UUID) getArguments().getSerializable(ARG_UUID);
             String time = getArguments().getString(ARG_TIME);
             String days = getArguments().getString(ARG_DAYS);
 
@@ -51,20 +52,26 @@ public class AlarmDeleteFragment extends DialogFragment {
                     .setTitle(getResources().getString(R.string.alarm_delete_dialog_title))
                     .setMessage(getResources().getString(R.string.alarm_delete_dialog_message)
                             + " " + time + " -> " + days)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        try {
-                            DatabaseAlarmController.Companion.getInstance(getActivity())
-                                    .deleteAlarm(uuid);
-                            Log.d(TAG, "Alarm deleted");
-                            sendResult(Activity.RESULT_OK, true);
-                        } catch (Exception e) {
-                            Log.d(TAG, "Error in deleting alarm");
-                            sendResult(Activity.RESULT_CANCELED, false);
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                DatabaseAlarmController.Companion.getInstance(getActivity())
+                                        .deleteAlarm(uuid);
+                                Log.d(TAG, "Alarm deleted");
+                                sendResult(Activity.RESULT_OK, true);
+                            } catch (Exception e) {
+                                Log.d(TAG, "Error in deleting alarm");
+                                sendResult(Activity.RESULT_CANCELED, false);
+                            }
                         }
                     })
-                    .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
-                        Log.d(TAG, "cancel dialog");
-                        sendResult(Activity.RESULT_CANCELED, false);
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d(TAG, "cancel dialog");
+                            sendResult(Activity.RESULT_CANCELED, false);
+                        }
                     })
                     .create();
         } else {

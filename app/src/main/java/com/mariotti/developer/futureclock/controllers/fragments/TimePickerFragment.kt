@@ -6,6 +6,7 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import android.util.Log
 import android.widget.TimePicker
 
 class TimePickerFragment private constructor() : DialogFragment(), TimePickerDialog.OnTimeSetListener {
@@ -14,6 +15,7 @@ class TimePickerFragment private constructor() : DialogFragment(), TimePickerDia
         val EXTRA_HOUR = "com.mariotti.developer.futureclock.controller.hour"
         val EXTRA_MINUTE = "com.mariotti.developer.futureclock.controller.minute"
 
+        private val TAG = "TimePickerFragment"
         private val ARG_HOUR = "ARG_HOUR"
         private val ARG_MINUTE = "ARG_MINUTE"
 
@@ -23,6 +25,8 @@ class TimePickerFragment private constructor() : DialogFragment(), TimePickerDia
             args.putInt(ARG_HOUR, hour % 24)
             args.putInt(ARG_MINUTE, minute % 60)
             fragment.arguments = args
+
+            Log.d(TAG, "newInstance")
 
             return fragment
         }
@@ -44,7 +48,7 @@ class TimePickerFragment private constructor() : DialogFragment(), TimePickerDia
             intent.putExtra(EXTRA_HOUR, hourOfDay)
             intent.putExtra(EXTRA_MINUTE, minute)
 
-            onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
+            it.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
         }
     }
 }

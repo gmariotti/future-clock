@@ -1,14 +1,13 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 
     defaultConfig {
@@ -38,8 +37,4 @@ dependencies {
     compile "io.reactivex:rxkotlin:$rxkotlin_version"
     compile "io.reactivex:rxandroid:$rxandroid_version"
     compile "com.google.code.gson:gson:$gson_version"
-}
-
-retrolambda {
-    jdk "C:\\Program Files\\Java\\jdk1.8.0_66"
 }

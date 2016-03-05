@@ -12,14 +12,10 @@ import android.view.*
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
-import com.mariotti.developer.futureclock.models.Alarm
 import rx.android.schedulers.AndroidSchedulers
-import rx.lang.kotlin.observable
-import rx.lang.kotlin.subscriber
-import rx.schedulers.Schedulers
 import java.util.*
 
-class ListOfAlarmFragment private constructor() : AdapterFragment() {
+class ListOfAlarmFragment : AdapterFragment() {
 
     private var mAlarmFab: FloatingActionButton? = null
     private var mAlarmRecyclerView: RecyclerView? = null
@@ -84,10 +80,8 @@ class ListOfAlarmFragment private constructor() : AdapterFragment() {
     }
 
     private fun updateRecyclerViewList() {
-        observable<List<Alarm>> {
-            val alarms = DatabaseAlarmController.getInstance(activity).getAlarms()
-            subscriber<List<Alarm>>().onNext(alarms)
-        }.subscribeOn(Schedulers.io())
+        DatabaseAlarmController.getInstance(activity)
+                .getAlarms()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { alarms ->
                     if (mAdapter == null) {

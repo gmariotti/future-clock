@@ -16,7 +16,9 @@ import com.mariotti.developer.futureclock.models.database.AlarmCursorWrapper
 import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTable
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.hasDay
+import rx.Observable
 import java.util.*
+import java.util.concurrent.Callable
 
 class DatabaseAlarmController private constructor(context: Context) {
 
@@ -39,22 +41,22 @@ class DatabaseAlarmController private constructor(context: Context) {
     }
 
     @Throws(Exception::class)
-    fun addAlarm(alarm: Alarm) {
-        val values = getContentValues(alarm)
+    fun addAlarm(alarm: Alarm): Observable<Unit> = Observable.create<Unit> {
+        it.onNext(Callable<Unit> {
+            val values = getContentValues(alarm)
 
-        // TODO - convert to SQLiteDatabase function with lambda
-        with(mDatabase) {
-            beginTransaction()
+            // TODO - convert to SQLiteDatabase function with lambda
+            mDatabase.beginTransaction()
             try {
-                val rowID = insert(AlarmTable.NAME, null, values)
+                val rowID = mDatabase.insert(AlarmTable.NAME, null, values)
                 if (rowID == -1L) {
                     throw Exception("Error inserting alarm")
                 }
-                setTransactionSuccessful()
+                mDatabase.setTransactionSuccessful()
             } finally {
-                endTransaction()
+                mDatabase.endTransaction()
             }
-        }
+        }.call())
     }
 
     private fun getContentValues(alarm: Alarm): ContentValues {
@@ -77,21 +79,23 @@ class DatabaseAlarmController private constructor(context: Context) {
         return values
     }
 
-    fun getAlarm(id: UUID): Alarm? {
-        val cursorWrapper = queryAlarms(
-                AlarmTable.Cols.UUID + " = ?",
-                arrayOf(id.toString()))
+    fun getAlarm(id: UUID): Observable<Alarm?> = Observable.create {
+        it.onNext(Callable<Alarm?> {
+            val cursorWrapper = queryAlarms(
+                    AlarmTable.Cols.UUID + " = ?",
+                    arrayOf(id.toString())
+            )
+            try {
+                if (cursorWrapper.count == 0) {
+                    null
+                }
 
-        try {
-            if (cursorWrapper.count == 0) {
-                return null
+                cursorWrapper.moveToFirst()
+                cursorWrapper.getAlarmFromDb()
+            } finally {
+                cursorWrapper.close()
             }
-
-            cursorWrapper.moveToFirst()
-            return cursorWrapper.getAlarmFromDb()
-        } finally {
-            cursorWrapper.close()
-        }
+        }.call())
     }
 
     private fun queryAlarms(whereClause: String?, whereArgs: Array<String>?): AlarmCursorWrapper {
@@ -108,55 +112,61 @@ class DatabaseAlarmController private constructor(context: Context) {
     }
 
     @Throws(Exception::class)
-    fun updateAlarm(alarm: Alarm) {
-        val uuidString = alarm.uuid.toString()
-        val values = getContentValues(alarm)
+    fun updateAlarm(alarm: Alarm): Observable<Unit> = Observable.create {
+        it.onNext(Callable<Unit> {
 
-        // TODO - convert to SQLiteDatabase function with lambda
-        with(mDatabase) {
-            beginTransaction()
-            try {
-                val numRowsModified = update(
-                        AlarmTable.NAME,
-                        values,
-                        AlarmTable.Cols.UUID + " = ?",
-                        arrayOf(uuidString))
-                if (numRowsModified != 1) {
-                    throw Exception("Error updating alarm " + uuidString)
+            val uuidString = alarm.uuid.toString()
+            val values = getContentValues(alarm)
+
+            // TODO - convert to SQLiteDatabase function with lambda
+            with(mDatabase) {
+                beginTransaction()
+                try {
+                    val numRowsModified = update(
+                            AlarmTable.NAME,
+                            values,
+                            AlarmTable.Cols.UUID + " = ?",
+                            arrayOf(uuidString))
+                    if (numRowsModified != 1) {
+                        throw Exception("Error updating alarm " + uuidString)
+                    }
+                    setTransactionSuccessful()
+                } finally {
+                    endTransaction()
                 }
-                setTransactionSuccessful()
-            } finally {
-                endTransaction()
             }
-        }
+        }.call())
     }
 
     @Throws(Exception::class)
-    fun deleteAlarm(uuid: UUID) {
+    fun deleteAlarm(uuid: UUID): Observable<Unit> = Observable.create {
+        it.onNext(Callable<Unit> {
 
-        // TODO - convert to SQLiteDatabase function with lambda
-        with(mDatabase) {
-            beginTransaction()
-            try {
-                val numRowsDeleted = delete(
-                        AlarmTable.NAME,
-                        AlarmTable.Cols.UUID + " = ?",
-                        arrayOf(uuid.toString()))
-                if (numRowsDeleted != 1) {
-                    throw Exception("Error delete alarm " + uuid.toString())
+            // TODO - convert to SQLiteDatabase function with lambda
+            with(mDatabase) {
+                beginTransaction()
+                try {
+                    val numRowsDeleted = delete(
+                            AlarmTable.NAME,
+                            AlarmTable.Cols.UUID + " = ?",
+                            arrayOf(uuid.toString()))
+                    if (numRowsDeleted != 1) {
+                        throw Exception("Error delete alarm " + uuid.toString())
+                    }
+                    setTransactionSuccessful()
+                } finally {
+                    endTransaction()
                 }
-                setTransactionSuccessful()
-            } finally {
-                endTransaction()
             }
-        }
+        }.call())
     }
 
-    fun getAlarms(): List<Alarm> {
-        val cursorWrapper = queryAlarms(null, null)
-        val alarms = createListFromCursorWrapper(cursorWrapper)
-
-        return alarms
+    fun getAlarms(): Observable<List<Alarm>> = Observable.create {
+        it.onNext(Callable<List<Alarm>> {
+            val cursorWrapper = queryAlarms(null, null)
+            val alarms = createListFromCursorWrapper(cursorWrapper)
+            alarms
+        }.call())
     }
 
     private fun createListFromCursorWrapper(cursorWrapper: AlarmCursorWrapper): List<Alarm> {
@@ -175,12 +185,13 @@ class DatabaseAlarmController private constructor(context: Context) {
         return alarms
     }
 
-    fun getActiveAlarms(): List<Alarm> {
-        val cursorWrapper = queryAlarms(
-                AlarmTable.Cols.ACTIVE + " = 1",
-                null)
-        val alarms = createListFromCursorWrapper(cursorWrapper)
-
-        return alarms
+    fun getActiveAlarms(): Observable<List<Alarm>> = Observable.create {
+        it.onNext(Callable<List<Alarm>> {
+            val cursorWrapper = queryAlarms(
+                    AlarmTable.Cols.ACTIVE + " = 1",
+                    null)
+            val alarms = createListFromCursorWrapper(cursorWrapper)
+            alarms
+        }.call())
     }
 }

@@ -56,15 +56,14 @@ public class AlarmFiredFragment extends Fragment {
         mButton = (Button) view.findViewById(R.id.button_talk);
 
         UUID uuid = (UUID) getArguments().getSerializable(ARG_UUID);
-        Alarm alarm = DatabaseAlarmController.Companion.getInstance(getActivity())
-                .getAlarm(uuid);
+        //Alarm alarm = DatabaseAlarmController.Companion.getInstance(getActivity()).getAlarm(uuid);
 
-        mAlarmFiredTextView.setText("Fired alarm at time " +
-                AlarmUtil.getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute()));
+        //mAlarmFiredTextView.setText("Fired alarm at time " +
+        //        AlarmUtil.getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute()));
 
         setNextAlarm();
 
-        mButton.setOnClickListener(button ->
+        /*mButton.setOnClickListener(button ->
                 Observable.create(new Observable.OnSubscribe<OpenMapWeather>() {
                     @Override
                     public void call(Subscriber<? super OpenMapWeather> subscriber) {
@@ -104,7 +103,7 @@ public class AlarmFiredFragment extends Fragment {
                                 });
                                 Log.d(TAG, "onNext");
                             }
-                        }));
+                        }));*/
 
         return view;
     }
