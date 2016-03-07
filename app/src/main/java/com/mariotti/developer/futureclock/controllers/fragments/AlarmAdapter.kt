@@ -12,6 +12,7 @@ import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.getShortDaysString
+import rx.SingleSubscriber
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 
@@ -66,14 +67,13 @@ class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: 
                 DatabaseAlarmController.getInstance(mFragment.activity)
                         .updateAlarm(mAlarm!!)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(object : Subscriber<Unit>() {
-                            override fun onNext(p0: Unit?) {
-                            }
-
-                            override fun onCompleted() {
+                        .subscribe(object : SingleSubscriber<Unit>() {
+                            override fun onSuccess(p0: Unit?) {
+                                Log.d("AlarmHolder[$adapterPosition]", "onSuccess")
                             }
 
                             override fun onError(p0: Throwable?) {
+                                Log.d("AlarmHolder[$adapterPosition]", "Error in enable/disable alarm")
                             }
 
                         })

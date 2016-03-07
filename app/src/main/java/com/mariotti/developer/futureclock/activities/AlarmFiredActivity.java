@@ -8,8 +8,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.mariotti.developer.futureclock.controllers.AlarmManagementController;
-import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
-import com.mariotti.developer.futureclock.controllers.fragments.AlarmFiredFragment;
+import com.mariotti.developer.futureclock.controllers.fragments.FiredAlarmFragment;
 import com.mariotti.developer.futureclock.models.Alarm;
 
 import java.util.Calendar;
@@ -36,7 +35,7 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
             long alarmTime = AlarmManagementController.getNearestDayForAlarm(alarm, Calendar.getInstance())
                     .getTimeInMillis();
 
-            Intent intentAlarmInfo = FutureClockActivity.Companion.newIntent(context);
+            Intent intentAlarmInfo = ListOfAlarmActivity.Companion.newIntent(context);
             PendingIntent pendingIntentAlarmInfo = PendingIntent.getActivity(context, REQUEST_CODE, intentAlarmInfo, PendingIntent.FLAG_CANCEL_CURRENT);
             AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(alarmTime, pendingIntentAlarmInfo);
             alarmManager.setAlarmClock(clockInfo, pendingIntent);
@@ -59,6 +58,6 @@ public class AlarmFiredActivity extends SingleFragmentActivity {
         UUID uuid = (UUID) getIntent().getSerializableExtra(EXTRA_ALARM_FIRED_UUID);
         Log.d(TAG, "UUID = " + uuid.toString());
 
-        return AlarmFiredFragment.newInstance(uuid);
+        return FiredAlarmFragment.newInstance(uuid);
     }
 }

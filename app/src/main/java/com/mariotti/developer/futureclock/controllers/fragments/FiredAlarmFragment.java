@@ -3,9 +3,7 @@ package com.mariotti.developer.futureclock.controllers.fragments;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,22 +11,11 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.mariotti.developer.futureclock.R;
-import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
-import com.mariotti.developer.futureclock.controllers.OpenMapWeatherFetchr;
-import com.mariotti.developer.futureclock.models.Alarm;
-import com.mariotti.developer.futureclock.models.OpenMapWeather;
-import com.mariotti.developer.futureclock.util.AlarmUtil;
 
-import java.io.IOException;
 import java.util.UUID;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-
-public class AlarmFiredFragment extends Fragment {
-    private static final String TAG = "AlarmFiredFragment";
+public class FiredAlarmFragment extends Fragment {
+    private static final String TAG = "FiredAlarmFragment";
     private static final String ARG_UUID = "ARG_UUID";
 
     private TextToSpeech mTextToSpeech;
@@ -36,8 +23,8 @@ public class AlarmFiredFragment extends Fragment {
     private TextView mAlarmFiredTextView;
     private Button mButton;
 
-    public static AlarmFiredFragment newInstance(UUID uuid) {
-        AlarmFiredFragment fragment = new AlarmFiredFragment();
+    public static FiredAlarmFragment newInstance(UUID uuid) {
+        FiredAlarmFragment fragment = new FiredAlarmFragment();
         if (uuid != null) {
             Bundle args = new Bundle();
             args.putSerializable(ARG_UUID, uuid);

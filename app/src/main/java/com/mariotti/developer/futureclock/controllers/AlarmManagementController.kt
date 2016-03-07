@@ -25,7 +25,7 @@ fun getNearestDayForAlarm(alarm: Alarm, day: Calendar): Calendar {
     }
 
     var nearestDay = setCorrectDay(initializedDay, days[0])
-    for (i in 1..(days.size - 1)) {
+    for (i in 1 until days.size) {
         val compareDay = setCorrectDay(initializedDay, days[i])
         if (nearestDay.after(compareDay)) {
             nearestDay = compareDay

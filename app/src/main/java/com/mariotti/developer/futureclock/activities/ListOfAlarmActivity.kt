@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment
 
 import com.mariotti.developer.futureclock.controllers.fragments.ListOfAlarmFragment
 
-class FutureClockActivity : SingleFragmentActivity() {
+class ListOfAlarmActivity : SingleFragmentActivity() {
 
     override fun createFragment(): Fragment {
         return ListOfAlarmFragment.newInstance()
@@ -15,7 +15,7 @@ class FutureClockActivity : SingleFragmentActivity() {
     companion object {
 
         fun newIntent(context: Context): Intent {
-            return Intent(context, FutureClockActivity::class.java)
+            return Intent(context, ListOfAlarmActivity::class.java)
         }
     }
 }

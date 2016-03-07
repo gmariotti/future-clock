@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.FutureClockActivity">
+        <activity android:name=".activities.ListOfAlarmActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,17 +23,17 @@
         </activity>
         <activity
             android:name=".activities.AlarmCreateOrUpdateActivity"
-            android:parentActivityName=".activities.FutureClockActivity">
+            android:parentActivityName=".activities.ListOfAlarmActivity">
         </activity>
         <!--<activity android:name=".activities.AlarmFiredActivity">
         </activity>-->
 
-        <!--<receiver
+        <receiver
             android:name=".broadcast.StartupReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-        </receiver>-->
+        </receiver>
     </application>
 
 </manifest>

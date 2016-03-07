@@ -3,6 +3,7 @@ package com.mariotti.developer.futureclock.controllers.fragments
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +19,8 @@ import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.WeekDay
 import com.mariotti.developer.futureclock.util.*
 import rx.Observable
+import rx.Single
+import rx.SingleSubscriber
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*
@@ -128,25 +131,21 @@ class AlarmCreateOrUpdateFragment : Fragment() {
             val alarmToInsert = Alarm(mUUID, day, mDays!!, mActive)
             val databaseController = DatabaseAlarmController.getInstance(activity)
 
-            val observable: Observable<Unit>
-            if (!checkIfUpdateOperation()) observable = databaseController.addAlarm(alarmToInsert)
-            else observable = databaseController.updateAlarm(alarmToInsert)
+            val singleObservable: Single<Unit>
+            if (!checkIfUpdateOperation()) singleObservable = databaseController.addAlarm(alarmToInsert)
+            else singleObservable = databaseController.updateAlarm(alarmToInsert)
 
-            observable.observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(object : Subscriber<Unit>() {
-                        override fun onNext(p0: Unit?) {
+            singleObservable.observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(object : SingleSubscriber<Unit>() {
+                        override fun onSuccess(p0: Unit?) {
                             activity.setResult(Activity.RESULT_OK)
                             activity.finish()
                         }
 
                         override fun onError(p0: Throwable?) {
-                            Log.d(TAG, "onError confirmButton")
+                            Snackbar.make(view, "Error in the operation", Snackbar.LENGTH_SHORT)
+                                    .show()
                         }
-
-                        override fun onCompleted() {
-                            Log.d(TAG, "onCompleted")
-                        }
-
                     })
         }
     }
@@ -201,14 +200,13 @@ class AlarmCreateOrUpdateFragment : Fragment() {
         mSwitch!!.isChecked = mActive
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.d(TAG, "onActivityResult")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         if (resultCode != Activity.RESULT_OK) {
             return
         }
 
         if (requestCode == REQUEST_CODE_TIME) {
-            mHour = data!!.getIntExtra(TimePickerFragment.EXTRA_HOUR, mHour)
+            mHour = data.getIntExtra(TimePickerFragment.EXTRA_HOUR, mHour)
             mMinute = data.getIntExtra(TimePickerFragment.EXTRA_MINUTE, mMinute)
 
             mTimeTextView!!.text = getHourAndMinuteAsString(mHour, mMinute)

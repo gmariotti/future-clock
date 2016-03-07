@@ -12,6 +12,7 @@ import android.view.*
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
+import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*
 
@@ -20,6 +21,7 @@ class ListOfAlarmFragment : AdapterFragment() {
     private var mAlarmFab: FloatingActionButton? = null
     private var mAlarmRecyclerView: RecyclerView? = null
     private var mAdapter: AlarmAdapter? = null
+    private var mSubscription: Subscription? = null
 
     companion object {
         private val TAG = "ListOfAlarmFragment"
@@ -46,10 +48,32 @@ class ListOfAlarmFragment : AdapterFragment() {
         }
         mAlarmRecyclerView = view.findViewById(R.id.alarms_recycler_view) as RecyclerView
         mAlarmRecyclerView!!.layoutManager = LinearLayoutManager(activity)
+        // To avoid skipping layout because no adapter is attached
+        mAdapter = AlarmAdapter(this, arrayListOf())
+        mAlarmRecyclerView!!.adapter = mAdapter
 
         updateRecyclerViewList()
 
         return view
+    }
+
+    private fun updateRecyclerViewList() {
+        mSubscription = DatabaseAlarmController.getInstance(activity)
+                .getAlarms()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { alarms ->
+                    mAdapter!!.setAlarms(alarms)
+                    mAdapter!!.notifyDataSetChanged()
+                }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mSubscription?.let {
+            if (!it.isUnsubscribed) {
+                it.unsubscribe()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -62,36 +86,20 @@ class ListOfAlarmFragment : AdapterFragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater!!.inflate(R.menu.app_menu, menu)
+        inflater.inflate(R.menu.app_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item!!.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.menu_settings -> {
                 Snackbar.make(view!!, "Settings", Snackbar.LENGTH_LONG)
-                        .setAction("-> TODO") { view -> Log.d(TAG, "Settings Selected") }
                         .show()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun updateRecyclerViewList() {
-        DatabaseAlarmController.getInstance(activity)
-                .getAlarms()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { alarms ->
-                    if (mAdapter == null) {
-                        mAdapter = AlarmAdapter(this, alarms)
-                        mAlarmRecyclerView!!.adapter = mAdapter
-                    } else {
-                        mAdapter!!.setAlarms(alarms)
-                        mAdapter!!.notifyDataSetChanged()
-                    }
-                }
     }
 
     override fun modifyAlarm(alarmUUID: UUID) {
