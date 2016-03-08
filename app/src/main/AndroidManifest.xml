@@ -25,7 +25,7 @@
             android:name=".activities.AlarmCreateOrUpdateActivity"
             android:parentActivityName=".activities.ListOfAlarmActivity">
         </activity>
-        <!--<activity android:name=".activities.AlarmFiredActivity">
+        <!--<activity android:name=".activities.FiredAlarmActivity">
         </activity>-->
 
         <receiver

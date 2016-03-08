@@ -7,6 +7,7 @@ import android.content.Intent
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.mariotti.developer.futureclock.R
+import com.mariotti.developer.futureclock.activities.FiredAlarmActivity
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.getNextAlarm
 import com.mariotti.developer.futureclock.models.Alarm
@@ -40,6 +41,9 @@ class StartupReceiver : BroadcastReceiver() {
                             val notificationManager: NotificationManager =
                                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                             notificationManager.notify(10, mBuilder.build())
+
+                            // TODO - to uncomment when FiredAlarmFragment is completed
+                            //FiredAlarmActivity.setActivityAlarm(context, it.uuid)
                         }
                     }
                 }

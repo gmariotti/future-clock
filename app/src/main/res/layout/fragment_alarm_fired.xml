@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.mariotti.developer.futureclock.activities.AlarmFiredActivity">
+    tools:context=".activities.FiredAlarmActivity">
 
     <TextView
         android:id="@+id/alarm_fired_text_view"
