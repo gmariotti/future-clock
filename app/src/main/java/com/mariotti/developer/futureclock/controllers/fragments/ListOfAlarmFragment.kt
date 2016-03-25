@@ -1,10 +1,12 @@
 package com.mariotti.developer.futureclock.controllers.fragments
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
+import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -12,16 +14,24 @@ import android.view.*
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.getNextAlarm
+import com.mariotti.developer.futureclock.models.Alarm
+import com.mariotti.developer.futureclock.util.ModifyOrUpdateAlarm
+import rx.Single
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import java.util.*
 
-class ListOfAlarmFragment : AdapterFragment() {
+class ListOfAlarmFragment : Fragment() {
 
-    private var mAlarmFab: FloatingActionButton? = null
-    private var mAlarmRecyclerView: RecyclerView? = null
-    private var mAdapter: AlarmAdapter? = null
-    private var mSubscription: Subscription? = null
+    lateinit private var mAlarmFab: FloatingActionButton
+    lateinit private var mAlarmRecyclerView: RecyclerView
+    lateinit private var mAdapter: AlarmAdapter
+
+    lateinit private var mAlarmToFire: Alarm
+    lateinit private var mSubscription: Subscription
 
     companion object {
         private val TAG = "ListOfAlarmFragment"
@@ -38,19 +48,34 @@ class ListOfAlarmFragment : AdapterFragment() {
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater!!.inflate(R.layout.fragment_future_clock, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.fragment_future_clock, container, false)
 
         mAlarmFab = view.findViewById(R.id.alarm_fab) as FloatingActionButton
-        mAlarmFab!!.setOnClickListener { v ->
+        mAlarmFab.setOnClickListener {
             val intent = AlarmCreateOrUpdateActivity.newIntent(activity, null)
             startActivityForResult(intent, REQUEST_CODE_ALARM_MANAGEMENT)
         }
         mAlarmRecyclerView = view.findViewById(R.id.alarms_recycler_view) as RecyclerView
-        mAlarmRecyclerView!!.layoutManager = LinearLayoutManager(activity)
+        mAlarmRecyclerView.layoutManager = LinearLayoutManager(activity)
         // To avoid skipping layout because no adapter is attached
-        mAdapter = AlarmAdapter(this, arrayListOf())
-        mAlarmRecyclerView!!.adapter = mAdapter
+        val modifyOrUpdateAlarm = object : ModifyOrUpdateAlarm {
+            private val fragment: Fragment = this@ListOfAlarmFragment
+
+            override fun getActivity(): Context = fragment.activity
+
+            override fun modifyAlarm(uuid: UUID) {
+                val intent = AlarmCreateOrUpdateActivity.newIntent(fragment.activity, uuid)
+                startActivityForResult(intent, REQUEST_CODE_ALARM_MANAGEMENT)
+            }
+
+            override fun deleteAlarm(uuid: UUID) {
+                throw UnsupportedOperationException()
+            }
+
+        }
+        mAdapter = AlarmAdapter(modifyOrUpdateAlarm, arrayListOf())
+        mAlarmRecyclerView.adapter = mAdapter
 
         updateRecyclerViewList()
 
@@ -58,21 +83,23 @@ class ListOfAlarmFragment : AdapterFragment() {
     }
 
     private fun updateRecyclerViewList() {
-        mSubscription = DatabaseAlarmController.getInstance(activity)
-                .getAlarms()
+        mSubscription = Single.create<List<Alarm>> {
+            val alarms: List<Alarm> = DatabaseAlarmController.getInstance(context).getAlarms()
+            if (!it.isUnsubscribed) {
+                it.onSuccess(alarms)
+            }
+        }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { alarms ->
-                    mAdapter!!.setAlarms(alarms)
-                    mAdapter!!.notifyDataSetChanged()
+                    mAdapter.setAlarms(alarms)
+                    mAdapter.notifyDataSetChanged()
                 }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mSubscription?.let {
-            if (!it.isUnsubscribed) {
-                it.unsubscribe()
-            }
+        if (!mSubscription.isUnsubscribed) {
+            mSubscription.unsubscribe()
         }
     }
 
@@ -82,11 +109,30 @@ class ListOfAlarmFragment : AdapterFragment() {
         }
 
         when (requestCode) {
-            REQUEST_CODE_ALARM_MANAGEMENT -> updateRecyclerViewList()
+            REQUEST_CODE_ALARM_MANAGEMENT -> {
+                updateRecyclerViewList()
+                updateNextAlarmToFire()
+            }
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater) {
+    private fun updateNextAlarmToFire() {
+        RxDatabaseAlarmController.getInstance(context)
+                .getActiveAlarms()
+                .subscribe {
+                    val alarmToFire = getNextAlarm(it)
+                    if (alarmToFire != null && !alarmToFire.equals(mAlarmToFire)) {
+                        mAlarmToFire = alarmToFire
+                        // TODO - set pendingIntent
+                        Log.d(TAG, alarmToFire.toShortString())
+                    } else {
+                        // TODO - remove pendingIntent if set because there's no active alarm
+                        Log.d(TAG, "pendingIntent removed")
+                    }
+                }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.app_menu, menu)
     }
@@ -102,8 +148,7 @@ class ListOfAlarmFragment : AdapterFragment() {
         }
     }
 
-    override fun modifyAlarm(alarmUUID: UUID) {
-        val intent = AlarmCreateOrUpdateActivity.newIntent(activity, alarmUUID)
-        startActivityForResult(intent, REQUEST_CODE_ALARM_MANAGEMENT)
-    }
+    /*override fun notifyChangedAlarm() {
+        updateNextAlarmToFire()
+    }*/
 }

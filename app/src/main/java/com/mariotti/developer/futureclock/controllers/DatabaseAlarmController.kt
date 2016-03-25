@@ -17,10 +17,7 @@ import com.mariotti.developer.futureclock.models.database.AlarmCursorWrapper
 import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTable
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.hasDay
-import rx.Observable
-import rx.Single
 import java.util.*
-import java.util.concurrent.Callable
 
 class DatabaseAlarmController private constructor(context: Context) {
 
@@ -43,17 +40,15 @@ class DatabaseAlarmController private constructor(context: Context) {
     }
 
     @Throws(Exception::class)
-    fun addAlarm(alarm: Alarm): Single<Unit> = Single.create<Unit> {
-        it.onSuccess(Callable<Unit> {
-            val values = getContentValues(alarm)
+    fun addAlarm(alarm: Alarm): Unit {
+        val values = getContentValues(alarm)
 
-            mDatabase.performTransaction {
-                val rowID = mDatabase.insert(AlarmTable.NAME, null, values)
-                if (rowID == -1L) {
-                    throw Exception("Error inserting alarm")
-                }
+        mDatabase.performTransaction {
+            val rowID = mDatabase.insert(AlarmTable.NAME, null, values)
+            if (rowID == -1L) {
+                throw Exception("Error inserting alarm")
             }
-        }.call())
+        }
     }
 
     private fun getContentValues(alarm: Alarm): ContentValues {
@@ -76,23 +71,21 @@ class DatabaseAlarmController private constructor(context: Context) {
         return values
     }
 
-    fun getAlarm(id: UUID): Single<Alarm?> = Single.create {
-        it.onSuccess(Callable<Alarm?> {
-            val cursorWrapper = queryAlarms(
-                    AlarmTable.Cols.UUID + " = ?",
-                    arrayOf(id.toString())
-            )
-            try {
-                if (cursorWrapper.count == 0) {
-                    null
-                }
-
-                cursorWrapper.moveToFirst()
-                cursorWrapper.getAlarmFromDb()
-            } finally {
-                cursorWrapper.close()
+    fun getAlarm(id: UUID): Alarm? {
+        val cursorWrapper = queryAlarms(
+                AlarmTable.Cols.UUID + " = ?",
+                arrayOf(id.toString())
+        )
+        try {
+            if (cursorWrapper.count == 0) {
+                return null
             }
-        }.call())
+
+            cursorWrapper.moveToFirst()
+            return cursorWrapper.getAlarmFromDb()
+        } finally {
+            cursorWrapper.close()
+        }
     }
 
     private fun queryAlarms(whereClause: String?, whereArgs: Array<String>?): AlarmCursorWrapper {
@@ -109,47 +102,39 @@ class DatabaseAlarmController private constructor(context: Context) {
     }
 
     @Throws(Exception::class)
-    fun updateAlarm(alarm: Alarm): Single<Unit> = Single.create {
-        it.onSuccess(Callable<Unit> {
+    fun updateAlarm(alarm: Alarm): Unit {
+        val uuidString = alarm.uuid.toString()
+        val values = getContentValues(alarm)
 
-            val uuidString = alarm.uuid.toString()
-            val values = getContentValues(alarm)
-
-            mDatabase.performTransaction {
-                val numRowsModified = mDatabase.update(
-                        AlarmTable.NAME,
-                        values,
-                        AlarmTable.Cols.UUID + " = ?",
-                        arrayOf(uuidString))
-                if (numRowsModified != 1) {
-                    throw Exception("Error updating alarm " + uuidString)
-                }
+        mDatabase.performTransaction {
+            val numRowsModified = mDatabase.update(
+                    AlarmTable.NAME,
+                    values,
+                    AlarmTable.Cols.UUID + " = ?",
+                    arrayOf(uuidString))
+            if (numRowsModified != 1) {
+                throw Exception("Error updating alarm " + uuidString)
             }
-        }.call())
+        }
     }
 
     @Throws(Exception::class)
-    fun deleteAlarm(uuid: UUID): Single<Unit> = Single.create<Unit> {
-        it.onSuccess(Callable<Unit> {
-
-            mDatabase.performTransaction {
-                val numRowsDeleted = mDatabase.delete(
-                        AlarmTable.NAME,
-                        AlarmTable.Cols.UUID + " = ?",
-                        arrayOf(uuid.toString()))
-                if (numRowsDeleted != 1) {
-                    throw Exception("Error delete alarm " + uuid.toString())
-                }
+    fun deleteAlarm(uuid: UUID): Unit {
+        mDatabase.performTransaction {
+            val numRowsDeleted = mDatabase.delete(
+                    AlarmTable.NAME,
+                    AlarmTable.Cols.UUID + " = ?",
+                    arrayOf(uuid.toString()))
+            if (numRowsDeleted != 1) {
+                throw Exception("Error delete alarm " + uuid.toString())
             }
-        }.call())
+        }
     }
 
-    fun getAlarms(): Single<List<Alarm>> = Single.create {
-        it.onSuccess(Callable<List<Alarm>> {
-            val cursorWrapper = queryAlarms(null, null)
-            val alarms = createListFromCursorWrapper(cursorWrapper)
-            alarms
-        }.call())
+    fun getAlarms(): List<Alarm> {
+        val cursorWrapper = queryAlarms(null, null)
+        val alarms = createListFromCursorWrapper(cursorWrapper)
+        return alarms
     }
 
     private fun createListFromCursorWrapper(cursorWrapper: AlarmCursorWrapper): List<Alarm> {
@@ -168,13 +153,11 @@ class DatabaseAlarmController private constructor(context: Context) {
         return alarms
     }
 
-    fun getActiveAlarms(): Single<List<Alarm>> = Single.create {
-        it.onSuccess(Callable<List<Alarm>> {
-            val cursorWrapper = queryAlarms(
-                    AlarmTable.Cols.ACTIVE + " = 1",
-                    null)
-            val alarms = createListFromCursorWrapper(cursorWrapper)
-            alarms
-        }.call())
+    fun getActiveAlarms(): List<Alarm> {
+        val cursorWrapper = queryAlarms(
+                AlarmTable.Cols.ACTIVE + " = 1",
+                null)
+        val alarms = createListFromCursorWrapper(cursorWrapper)
+        return alarms
     }
 }

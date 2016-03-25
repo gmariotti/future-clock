@@ -5,15 +5,17 @@ package com.mariotti.developer.futureclock.controllers
 import com.mariotti.developer.futureclock.models.Alarm
 import java.util.*
 
-fun getNextAlarm(alarms: List<Alarm>): Alarm? {
-    val today = Calendar.getInstance()
-    val indexOfAlarm: Int = alarms.mapIndexed { index, alarm ->
-        Pair(index, getNearestDayForAlarm(alarm, today))
-    }
-            .sortedBy { pair: Pair<Int, Calendar> -> pair.second }[0]
-            .first
+fun getNextAlarm(alarms: List<Alarm>, today: Calendar = Calendar.getInstance()): Alarm? {
+    if (alarms.size > 0) {
+        val indexOfAlarm: Int = alarms.mapIndexed { index, alarm ->
+            Pair(index, getNearestDayForAlarm(alarm, today))
+        }.sortedBy { pair: Pair<Int, Calendar> -> pair.second }[0]
+                .first
 
-    return if (indexOfAlarm == 0) null else alarms[indexOfAlarm]
+        return alarms[indexOfAlarm]
+    } else {
+        return null
+    }
 }
 
 fun getNearestDayForAlarm(alarm: Alarm, day: Calendar): Calendar {
@@ -36,7 +38,8 @@ fun getNearestDayForAlarm(alarm: Alarm, day: Calendar): Calendar {
 }
 
 private fun initializeHourMinuteAndTimezone(alarm: Alarm, day: Calendar): Calendar {
-    val dayToReturn = day.clone() as Calendar
+    val dayToReturn = Calendar.getInstance()
+    dayToReturn.time = day.time
     initializeHourAndMinute(alarm, dayToReturn)
     initializeTimezone(alarm, dayToReturn)
     correctDay(day, dayToReturn)
@@ -62,7 +65,8 @@ private fun correctDay(day: Calendar, dayToReturn: Calendar) {
 }
 
 private fun setCorrectDay(day: Calendar, weekDay: Int): Calendar {
-    val dayToReturn = day.clone() as Calendar
+    val dayToReturn = Calendar.getInstance()
+    dayToReturn.time = day.time
     dayToReturn.set(Calendar.DAY_OF_WEEK, weekDay)
     correctWeekDay(day, dayToReturn)
 

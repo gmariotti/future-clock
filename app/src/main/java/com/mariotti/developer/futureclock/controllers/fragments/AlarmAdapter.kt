@@ -9,18 +9,21 @@ import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.models.Alarm
+import com.mariotti.developer.futureclock.util.ModifyOrUpdateAlarm
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.getShortDaysString
 import rx.SingleSubscriber
 import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
+import java.util.*
 
-class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: List<Alarm>) :
+class AlarmAdapter(private val mModifyOrUpdateAlarm: ModifyOrUpdateAlarm, private var mAlarms: List<Alarm>) :
         RecyclerView.Adapter<AlarmAdapter.AlarmHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmHolder {
-        val layoutInflater = LayoutInflater.from(mFragment.activity)
+        val layoutInflater = LayoutInflater.from(mModifyOrUpdateAlarm.getActivity())
         val view = layoutInflater.inflate(R.layout.list_item_alarm, parent, false)
 
         return AlarmHolder(view, this)
@@ -28,7 +31,7 @@ class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: 
 
     override fun onBindViewHolder(holder: AlarmHolder, position: Int) {
         val alarm = mAlarms[position]
-        holder.bindAlarm(alarm)
+        holder.bindAlarm(alarm, position)
     }
 
     override fun getItemCount(): Int {
@@ -39,6 +42,21 @@ class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: 
         mAlarms = alarms
     }
 
+    fun modifyAlarm(uuid: UUID) {
+        mModifyOrUpdateAlarm.modifyAlarm(uuid)
+    }
+
+    fun deleteAlarm(uuid: UUID) {
+        mModifyOrUpdateAlarm.deleteAlarm(uuid)
+    }
+
+    fun updateAlarmInList(alarm: Alarm, position: Int): Unit {
+        setAlarms(mAlarms.mapIndexed { index, listAlarm ->
+            if (index == position) alarm else listAlarm
+        })
+        //mFragment.notifyChangedAlarm()
+    }
+
     inner class AlarmHolder(itemView: View, private val mAdapter: AlarmAdapter) :
             RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
@@ -46,7 +64,8 @@ class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: 
         private val mDaysTextView: TextView
         private val mActiveSwitch: Switch
 
-        private var mAlarm: Alarm? = null
+        lateinit private var mAlarm: Alarm
+        private var mPosition: Int
 
         init {
             itemView.setOnClickListener(this)
@@ -54,34 +73,26 @@ class AlarmAdapter(private val mFragment: AdapterFragment, private var mAlarms: 
             mTimeTextView = itemView.findViewById(R.id.list_item_time) as TextView
             mDaysTextView = itemView.findViewById(R.id.list_item_days) as TextView
             mActiveSwitch = itemView.findViewById(R.id.list_item_switch) as Switch
+            mPosition = -1
         }
 
-        fun bindAlarm(alarm: Alarm) {
+        fun bindAlarm(alarm: Alarm, position: Int) {
             mAlarm = alarm
+            mPosition = position
+
             mTimeTextView.text = getHourAndMinuteAsString(alarm.hour, alarm.minute)
             mDaysTextView.text = getShortDaysString(alarm)
             mActiveSwitch.isChecked = alarm.active
 
             mActiveSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
-                mAlarm!!.active = isChecked
-                DatabaseAlarmController.getInstance(mFragment.activity)
-                        .updateAlarm(mAlarm!!)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(object : SingleSubscriber<Unit>() {
-                            override fun onSuccess(p0: Unit?) {
-                                Log.d("AlarmHolder[$adapterPosition]", "onSuccess")
-                            }
-
-                            override fun onError(p0: Throwable?) {
-                                Log.d("AlarmHolder[$adapterPosition]", "Error in enable/disable alarm")
-                            }
-
-                        })
+                // TODO
             }
+
+            mActiveSwitch.isEnabled = false
         }
 
         override fun onClick(v: View) {
-            mAdapter.mFragment.modifyAlarm(mAlarm!!.uuid)
+            mAdapter.modifyAlarm(mAlarm.uuid)
         }
     }
 }

@@ -13,9 +13,12 @@ import android.widget.TextView
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.OpenMapWeatherFetchr
+import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.getNextAlarm
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.OpenMapWeather
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.util.makeNotificationFromAlarm
 import rx.Single
 import rx.SingleSubscriber
 import rx.android.schedulers.AndroidSchedulers
@@ -54,23 +57,7 @@ class FiredAlarmFragment : Fragment() {
         mButton = view.findViewById(R.id.button_talk) as Button
 
         val uuid = arguments.getSerializable(ARG_UUID) as UUID
-        DatabaseAlarmController.getInstance(activity)
-                .getAlarm(uuid)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : SingleSubscriber<Alarm?>() {
-                    override fun onSuccess(alarmFound: Alarm?) {
-                        alarmFound?.let {
-                            mAlarmFiredTextView!!.text = "Fired alarm at time " +
-                                    "${getHourAndMinuteAsString(alarmFound.hour, alarmFound.minute)}"
-                        }
-                    }
-
-                    override fun onError(error: Throwable) {
-                        Log.d(TAG, "onError finding alarm")
-                    }
-                })
-
-        manageNextAlarm(uuid)
+        manageAlarmFired(uuid)
 
         mButton!!.setOnClickListener {
             Single.create(Single.OnSubscribe<com.mariotti.developer.futureclock.models.OpenMapWeather> { singleSubscriber ->
@@ -111,7 +98,40 @@ class FiredAlarmFragment : Fragment() {
         return view
     }
 
-    private fun manageNextAlarm(uuid: UUID) {
+    private fun manageAlarmFired(uuid: UUID) {
+        RxDatabaseAlarmController.getInstance(activity)
+                .getAlarm(uuid)
+                .flatMap { alarmFound: Alarm? ->
+                    Single.create<Pair<Alarm?, Alarm?>> {
+                        val dbController = DatabaseAlarmController.getInstance(context)
+                        alarmFound?.let {
+                            if (alarmFound.days.size == 0) {
+                                dbController.updateAlarm(it.copy(active = false))
+                            }
+                        }
+                        Pair(alarmFound, getNextAlarm(dbController.getActiveAlarms()))
+                    }.subscribeOn(Schedulers.io())
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(object : SingleSubscriber<Pair<Alarm?, Alarm?>>() {
+                    override fun onSuccess(pair: Pair<Alarm?, Alarm?>) {
+                        val alarmFound: Alarm? = pair.first
+                        alarmFound?.let {
+                            mAlarmFiredTextView!!.text = "Fired alarm at time " +
+                                    "${getHourAndMinuteAsString(alarmFound.hour, alarmFound.minute)}"
+                        }
+                        pair.second?.let {
+                            setNextAlarmToFire(it)
+                        }
+                    }
 
+                    override fun onError(error: Throwable) {
+                        Log.d(TAG, "onError finding alarm")
+                    }
+                })
+    }
+
+    private fun setNextAlarmToFire(alarm: Alarm) {
+        makeNotificationFromAlarm(context, alarm)
     }
 }

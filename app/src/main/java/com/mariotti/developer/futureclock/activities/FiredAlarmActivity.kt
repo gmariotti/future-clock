@@ -7,6 +7,7 @@ import android.content.Intent
 import android.support.v4.app.Fragment
 import android.util.Log
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.fragments.FiredAlarmFragment
 import com.mariotti.developer.futureclock.controllers.getNearestDayForAlarm
 import com.mariotti.developer.futureclock.models.Alarm
@@ -33,7 +34,7 @@ class FiredAlarmActivity : SingleFragmentActivity() {
         }
 
         fun setActivityAlarm(context: Context, uuid: UUID) {
-            DatabaseAlarmController.getInstance(context)
+            RxDatabaseAlarmController.getInstance(context)
                     .getAlarm(uuid)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(object : SingleSubscriber<Alarm?>() {

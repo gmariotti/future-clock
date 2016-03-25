@@ -14,6 +14,7 @@ import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
+import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.extensions.getColorBasedOnApi23
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.WeekDay
@@ -25,7 +26,7 @@ import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*
 
-class AlarmCreateOrUpdateFragment : Fragment() {
+class CreateOrUpdateAlarmFragment : Fragment() {
 
     private var mUUID: UUID = UUID.randomUUID()
     private var mHour: Int = 0
@@ -33,20 +34,19 @@ class AlarmCreateOrUpdateFragment : Fragment() {
     private var mDays: IntArray? = null
     private var mActive: Boolean = false
 
-    private var mTimeTextView: TextView? = null
-    private var mDaysTextView: Array<TextView>? = null
-
-    private var mSwitch: Switch? = null
-    private var mConfirmButton: Button? = null
+    lateinit private var mTimeTextView: TextView
+    lateinit private var mDaysTextView: Array<TextView>
+    lateinit private var mSwitch: Switch
+    lateinit private var mConfirmButton: Button
 
     companion object {
-        private val TAG = "AlarmCreateOrUpdateFragment"
+        private val TAG = "CreateOrUpdateAlarmFragment"
         private val DIALOG_TIME = "TimePickerFragment"
         private val UUID_ARG = "UUID_ARG"
         private val REQUEST_CODE_TIME = 1
 
-        fun newInstance(uuid: UUID?): AlarmCreateOrUpdateFragment {
-            val fragment = AlarmCreateOrUpdateFragment()
+        fun newInstance(uuid: UUID?): CreateOrUpdateAlarmFragment {
+            val fragment = CreateOrUpdateAlarmFragment()
             uuid?.let {
                 val args = Bundle()
                 args.putSerializable(UUID_ARG, uuid)
@@ -108,8 +108,8 @@ class AlarmCreateOrUpdateFragment : Fragment() {
     private fun initTimeTextView(view: View) {
         mTimeTextView = view.findViewById(R.id.alarm_time_picker) as TextView
 
-        mTimeTextView!!.text = "00:00"
-        mTimeTextView!!.setOnClickListener {
+        mTimeTextView.text = "00:00"
+        mTimeTextView.setOnClickListener {
             val dialog = TimePickerFragment.newInstance(mHour, mMinute)
             dialog.setTargetFragment(this, REQUEST_CODE_TIME)
             dialog.show(fragmentManager, DIALOG_TIME)
@@ -118,19 +118,19 @@ class AlarmCreateOrUpdateFragment : Fragment() {
 
     private fun initActiveSwitch(view: View) {
         mSwitch = view.findViewById(R.id.alarm_switch) as Switch
-        mSwitch!!.isChecked = false
-        mSwitch!!.setOnClickListener { mActive = !mActive }
+        mSwitch.isChecked = false
+        mSwitch.setOnClickListener { mActive = !mActive }
     }
 
     private fun initConfirmButton(view: View) {
         mConfirmButton = view.findViewById(R.id.alarm_confirm_button) as Button
-        mConfirmButton!!.setOnClickListener {
+        mConfirmButton.setOnClickListener {
             val day = Calendar.getInstance()
             day.set(Calendar.HOUR_OF_DAY, mHour)
             day.set(Calendar.MINUTE, mMinute)
             val alarmToInsert = Alarm(mUUID, day, mDays!!, mActive)
-            val databaseController = DatabaseAlarmController.getInstance(activity)
 
+            val databaseController = RxDatabaseAlarmController.getInstance(activity)
             val singleObservable: Single<Unit>
             if (!checkIfUpdateOperation()) singleObservable = databaseController.addAlarm(alarmToInsert)
             else singleObservable = databaseController.updateAlarm(alarmToInsert)
@@ -154,7 +154,7 @@ class AlarmCreateOrUpdateFragment : Fragment() {
         if (checkIfUpdateOperation()) {
             val alarmUUID = arguments.getSerializable(UUID_ARG) as UUID
             Log.d(TAG, "UUID is $alarmUUID")
-            DatabaseAlarmController.getInstance(activity)
+            RxDatabaseAlarmController.getInstance(activity)
                     .getAlarm(alarmUUID)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
@@ -173,7 +173,7 @@ class AlarmCreateOrUpdateFragment : Fragment() {
 
     private fun setAlarmDependencies(alarm: Alarm) {
         initAlarmVariables(alarm)
-        mDaysTextView!!.forEachIndexed { index, textView -> setDayTextView(textView, index + 1) }
+        mDaysTextView.forEachIndexed { index, textView -> setDayTextView(textView, index + 1) }
         setTimeTextView()
         setActiveSwitch()
     }
@@ -193,11 +193,11 @@ class AlarmCreateOrUpdateFragment : Fragment() {
     }
 
     private fun setTimeTextView() {
-        mTimeTextView!!.text = getHourAndMinuteAsString(mHour, mMinute)
+        mTimeTextView.text = getHourAndMinuteAsString(mHour, mMinute)
     }
 
     private fun setActiveSwitch() {
-        mSwitch!!.isChecked = mActive
+        mSwitch.isChecked = mActive
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
@@ -209,7 +209,7 @@ class AlarmCreateOrUpdateFragment : Fragment() {
             mHour = data.getIntExtra(TimePickerFragment.EXTRA_HOUR, mHour)
             mMinute = data.getIntExtra(TimePickerFragment.EXTRA_MINUTE, mMinute)
 
-            mTimeTextView!!.text = getHourAndMinuteAsString(mHour, mMinute)
+            mTimeTextView.text = getHourAndMinuteAsString(mHour, mMinute)
         }
     }
 }
