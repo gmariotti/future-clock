@@ -13,25 +13,25 @@ import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
-import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.extensions.getColorBasedOnApi23
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.WeekDay
-import com.mariotti.developer.futureclock.util.*
-import rx.Observable
+import com.mariotti.developer.futureclock.util.addDay
+import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.util.hasDay
+import com.mariotti.developer.futureclock.util.removeDay
 import rx.Single
 import rx.SingleSubscriber
-import rx.Subscriber
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*
 
 class CreateOrUpdateAlarmFragment : Fragment() {
 
     private var mUUID: UUID = UUID.randomUUID()
-    private var mHour: Int = 0
-    private var mMinute: Int = 0
-    private var mDays: IntArray? = null
+    private var mHour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    private var mMinute: Int = Calendar.getInstance().get(Calendar.MINUTE)
+    private var mDays: IntArray = intArrayOf()
     private var mActive: Boolean = false
 
     lateinit private var mTimeTextView: TextView
@@ -93,11 +93,11 @@ class CreateOrUpdateAlarmFragment : Fragment() {
         textView.setOnClickListener {
             if (textView.currentTextColor == resources.getColorBasedOnApi23(R.color.grey)) {
                 textView.setTextColor(resources.getColorBasedOnApi23(R.color.colorAccent))
-                mDays = addDay(mDays!!, day)
+                mDays = addDay(mDays, day)
                 Log.d(TAG, "added day ${WeekDay.getShortName(day)}")
             } else {
                 textView.setTextColor(resources.getColorBasedOnApi23(R.color.grey))
-                mDays = removeDay(mDays!!, day)
+                mDays = removeDay(mDays, day)
                 Log.d(TAG, "removed day ${WeekDay.getShortName(day)}")
             }
         }
@@ -108,7 +108,7 @@ class CreateOrUpdateAlarmFragment : Fragment() {
     private fun initTimeTextView(view: View) {
         mTimeTextView = view.findViewById(R.id.alarm_time_picker) as TextView
 
-        mTimeTextView.text = "00:00"
+        mTimeTextView.text = getHourAndMinuteAsString(mHour, mMinute)
         mTimeTextView.setOnClickListener {
             val dialog = TimePickerFragment.newInstance(mHour, mMinute)
             dialog.setTargetFragment(this, REQUEST_CODE_TIME)
@@ -128,10 +128,11 @@ class CreateOrUpdateAlarmFragment : Fragment() {
             val day = Calendar.getInstance()
             day.set(Calendar.HOUR_OF_DAY, mHour)
             day.set(Calendar.MINUTE, mMinute)
-            val alarmToInsert = Alarm(mUUID, day, mDays!!, mActive)
+            val alarmToInsert = Alarm(mUUID, day, mDays, mActive)
 
             val databaseController = RxDatabaseAlarmController.getInstance(activity)
             val singleObservable: Single<Unit>
+
             if (!checkIfUpdateOperation()) singleObservable = databaseController.addAlarm(alarmToInsert)
             else singleObservable = databaseController.updateAlarm(alarmToInsert)
 
@@ -151,19 +152,20 @@ class CreateOrUpdateAlarmFragment : Fragment() {
     }
 
     private fun initAlarmDependencies() {
-        if (checkIfUpdateOperation()) {
-            val alarmUUID = arguments.getSerializable(UUID_ARG) as UUID
-            Log.d(TAG, "UUID is $alarmUUID")
-            RxDatabaseAlarmController.getInstance(activity)
-                    .getAlarm(alarmUUID)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
-                        val alarm = it ?: getDefaultAlarmInstance()
-                        setAlarmDependencies(alarm)
-                    }
-        } else {
-            val alarm: Alarm = getDefaultAlarmInstance()
-            setAlarmDependencies(alarm)
+        arguments?.let {
+            // is null if not of type UUID
+            val alarmUUID = arguments.getSerializable(UUID_ARG) as? UUID
+            alarmUUID?.let {
+                Log.d(TAG, "UUID is $alarmUUID")
+                RxDatabaseAlarmController.getInstance(activity)
+                        .getAlarm(alarmUUID)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe {
+                            it?.let {
+                                setAlarmDependencies(it)
+                            }
+                        }
+            }
         }
     }
 
@@ -179,6 +181,8 @@ class CreateOrUpdateAlarmFragment : Fragment() {
     }
 
     private fun initAlarmVariables(alarm: Alarm) {
+        // TODO - What if we use Destructuring Declaration and Component Functions?
+
         mUUID = alarm.uuid
         mHour = alarm.hour
         mMinute = alarm.minute
@@ -187,7 +191,7 @@ class CreateOrUpdateAlarmFragment : Fragment() {
     }
 
     private fun setDayTextView(textView: TextView, day: Int) {
-        if (hasDay(mDays!!, day)) {
+        if (hasDay(mDays, day)) {
             textView.setTextColor(resources.getColorBasedOnApi23(R.color.colorAccent))
         }
     }

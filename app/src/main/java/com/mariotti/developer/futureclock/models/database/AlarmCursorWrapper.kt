@@ -18,7 +18,6 @@ import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTab
 import java.util.*
 
 class AlarmCursorWrapper(cursor: Cursor) : CursorWrapper(cursor) {
-    private val TAG = "AlarmCursorWrapper"
 
     fun getAlarmFromDb(): Alarm {
         val uuidString = getStringFromColumnName(AlarmTable.Cols.UUID)
@@ -39,7 +38,6 @@ class AlarmCursorWrapper(cursor: Cursor) : CursorWrapper(cursor) {
                 timezone,
                 active == 1
         )
-        Log.d(TAG, alarm.toString())
 
         return alarm
     }

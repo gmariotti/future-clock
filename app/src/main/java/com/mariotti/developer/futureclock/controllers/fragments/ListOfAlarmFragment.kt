@@ -30,12 +30,11 @@ class ListOfAlarmFragment : Fragment() {
     lateinit private var mAlarmRecyclerView: RecyclerView
     lateinit private var mAdapter: AlarmAdapter
 
-    lateinit private var mAlarmToFire: Alarm
+    private var mAlarmToFireID: UUID = UUID(0L, 0L)
     lateinit private var mSubscription: Subscription
 
     companion object {
         private val TAG = "ListOfAlarmFragment"
-
         private val REQUEST_CODE_ALARM_MANAGEMENT = 1
 
         fun newInstance(): ListOfAlarmFragment {
@@ -84,7 +83,8 @@ class ListOfAlarmFragment : Fragment() {
 
     private fun updateRecyclerViewList() {
         mSubscription = Single.create<List<Alarm>> {
-            val alarms: List<Alarm> = DatabaseAlarmController.getInstance(context).getAlarms()
+            val alarms: List<Alarm> = DatabaseAlarmController.getInstance(context)
+                    .getAlarms()
             if (!it.isUnsubscribed) {
                 it.onSuccess(alarms)
             }
@@ -121,10 +121,12 @@ class ListOfAlarmFragment : Fragment() {
                 .getActiveAlarms()
                 .subscribe {
                     val alarmToFire = getNextAlarm(it)
-                    if (alarmToFire != null && !alarmToFire.equals(mAlarmToFire)) {
-                        mAlarmToFire = alarmToFire
-                        // TODO - set pendingIntent
-                        Log.d(TAG, alarmToFire.toShortString())
+                    if (alarmToFire != null) {
+                        if (!alarmToFire.uuid.equals(mAlarmToFireID)) {
+                            mAlarmToFireID = alarmToFire.uuid
+                            // TODO - set pendingIntent
+                            Log.d(TAG, alarmToFire.toShortString())
+                        }
                     } else {
                         // TODO - remove pendingIntent if set because there's no active alarm
                         Log.d(TAG, "pendingIntent removed")

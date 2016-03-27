@@ -2,10 +2,10 @@ package com.mariotti.developer.futureclock.extensions
 
 import android.database.sqlite.SQLiteDatabase
 
-fun SQLiteDatabase.performTransaction(body: () -> Unit) {
+inline fun SQLiteDatabase.performTransaction(dbOperations: () -> Unit) {
     this.beginTransaction()
     try {
-        body()
+        dbOperations()
         this.setTransactionSuccessful()
     } finally {
         this.endTransaction()

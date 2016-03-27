@@ -76,15 +76,13 @@ class DatabaseAlarmController private constructor(context: Context) {
                 AlarmTable.Cols.UUID + " = ?",
                 arrayOf(id.toString())
         )
-        try {
-            if (cursorWrapper.count == 0) {
+        // use works like a try with resources
+        cursorWrapper.use {
+            if (it.count == 0) {
                 return null
             }
-
-            cursorWrapper.moveToFirst()
+            it.moveToFirst()
             return cursorWrapper.getAlarmFromDb()
-        } finally {
-            cursorWrapper.close()
         }
     }
 
@@ -140,14 +138,12 @@ class DatabaseAlarmController private constructor(context: Context) {
     private fun createListFromCursorWrapper(cursorWrapper: AlarmCursorWrapper): List<Alarm> {
         val alarms = ArrayList<Alarm>()
 
-        try {
-            cursorWrapper.moveToFirst()
-            while (!cursorWrapper.isAfterLast) {
-                alarms.add(cursorWrapper.getAlarmFromDb())
-                cursorWrapper.moveToNext()
+        cursorWrapper.use {
+            it.moveToFirst()
+            while (!it.isAfterLast) {
+                alarms.add(it.getAlarmFromDb())
+                it.moveToNext()
             }
-        } finally {
-            cursorWrapper.close()
         }
 
         return alarms

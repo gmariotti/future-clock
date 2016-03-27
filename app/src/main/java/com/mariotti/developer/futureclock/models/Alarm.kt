@@ -27,10 +27,8 @@ class Alarm(val uuid: UUID = UUID.randomUUID(), hour: Int = 0, minute: Int = 0, 
     }
 
     fun copy(uuid: UUID = this.uuid, hour: Int = this.hour, minute: Int = this.minute,
-             days: IntArray = this.days, timezone: String = this.timezone,
-             active: Boolean = this.active): Alarm {
-        return Alarm(uuid, hour, minute, days, timezone, active)
-    }
+             days: IntArray = this.days, timezone: String = this.timezone, active: Boolean = this.active)
+            : Alarm = Alarm(uuid, hour, minute, days, timezone, active)
 
     fun toShortString(): String = "Alarm(hour=$hour, minute=$minute, " +
             "days=${days.joinToString { WeekDay.getShortName(it) }})"
