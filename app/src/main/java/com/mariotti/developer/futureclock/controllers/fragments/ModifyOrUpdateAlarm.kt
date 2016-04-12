@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.util
+package com.mariotti.developer.futureclock.controllers.fragments
 
 import android.content.Context
 import java.util.*

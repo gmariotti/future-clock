@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.ListOfAlarmActivity">
+        <activity android:name=".ui.activities.ListOfAlarmActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,10 +23,10 @@
         </activity>
         <activity
             android:name=".activities.AlarmCreateOrUpdateActivity"
-            android:parentActivityName=".activities.ListOfAlarmActivity">
+            android:parentActivityName=".ui.activities.ListOfAlarmActivity">
         </activity>
-        <!--<activity android:name=".activities.FiredAlarmActivity">
-        </activity>-->
+        <activity android:name=".activities.FiredAlarmActivity">
+        </activity>
 
         <receiver
             android:name=".broadcast.StartupReceiver">

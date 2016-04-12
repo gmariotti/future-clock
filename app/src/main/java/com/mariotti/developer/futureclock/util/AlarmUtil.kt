@@ -15,8 +15,7 @@ fun getShortDaysString(alarm: Alarm): String {
 
     if (days.size > 0) {
         val maxIndex = days.lastIndex
-        days.forEachIndexed {
-            index, day ->
+        days.forEachIndexed { index, day ->
             result.append(WeekDay.getShortName(day))
             if (index < maxIndex) result.append(", ")
         }

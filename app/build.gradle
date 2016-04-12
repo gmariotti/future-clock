@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.3'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -30,8 +31,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     androidTestCompile "com.android.support:support-annotations:$support_version"
-    androidTestCompile "com.android.support.test:runner:0.4.1"
-    androidTestCompile "com.android.support.test:rules:0.4.1"
+    androidTestCompile 'com.android.support.test:runner:0.4.1'
+    androidTestCompile 'com.android.support.test:rules:0.4.1'
     androidTestCompile "com.android.support.test.espresso:espresso-core:$espresso_version"
     compile "com.android.support:design:$support_version"
     compile "com.android.support:appcompat-v7:$support_version"
@@ -41,5 +42,6 @@ dependencies {
     compile "io.reactivex:rxjava:$rxjava_version"
     compile "io.reactivex:rxkotlin:$rxkotlin_version"
     compile "io.reactivex:rxandroid:$rxandroid_version"
+    compile "com.squareup.sqlbrite:sqlbrite:$sqlbrite_version"
     compile "com.google.code.gson:gson:$gson_version"
 }

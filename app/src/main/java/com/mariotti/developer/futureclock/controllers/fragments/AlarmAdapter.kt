@@ -11,7 +11,7 @@ import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.models.Alarm
-import com.mariotti.developer.futureclock.util.ModifyOrUpdateAlarm
+import com.mariotti.developer.futureclock.controllers.fragments.ModifyOrUpdateAlarm
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.getShortDaysString
 import rx.SingleSubscriber
