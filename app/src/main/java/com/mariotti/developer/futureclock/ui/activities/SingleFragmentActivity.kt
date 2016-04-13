@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.activities
+package com.mariotti.developer.futureclock.ui.activities
 
 import android.os.Bundle
 import android.os.StrictMode

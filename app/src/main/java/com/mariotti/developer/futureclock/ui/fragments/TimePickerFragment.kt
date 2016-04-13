@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controllers.fragments
+package com.mariotti.developer.futureclock.ui.fragments
 
 import android.app.Activity
 import android.app.Dialog

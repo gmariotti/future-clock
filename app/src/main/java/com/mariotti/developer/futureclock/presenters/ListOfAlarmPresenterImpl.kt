@@ -7,7 +7,8 @@ import rx.android.schedulers.AndroidSchedulers
 
 class ListOfAlarmPresenterImpl(val mainScreen: MainScreen, val alarmRepository: AlarmRepository) :
 		ListOfAlarmPresenter {
-	var subscription: Subscription? = null
+
+	private var subscription: Subscription? = null
 
 	override fun loadAlarms() {
 		subscription = alarmRepository.loadAlarms()

@@ -11,7 +11,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import com.mariotti.developer.futureclock.R
-import com.mariotti.developer.futureclock.activities.AlarmCreateOrUpdateActivity
+import com.mariotti.developer.futureclock.ui.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.activities.FiredAlarmActivity
 import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
@@ -67,7 +67,8 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 		alarmListRecyclerView.layoutManager = LinearLayoutManager(activity)
 		alarmListRecyclerView.adapter = recyclerViewAdapter
 
-		listOfAlarmPresenter = ListOfAlarmPresenterImpl(this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
+		listOfAlarmPresenter = ListOfAlarmPresenterImpl(
+				this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
 		listOfAlarmPresenter.loadAlarms()
 
 		return view

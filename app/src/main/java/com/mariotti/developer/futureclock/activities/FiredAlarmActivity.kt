@@ -11,6 +11,7 @@ import com.mariotti.developer.futureclock.controllers.fragments.FiredAlarmFragme
 import com.mariotti.developer.futureclock.controllers.getNearestDayForAlarm
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.ui.activities.ListOfAlarmActivity
+import com.mariotti.developer.futureclock.ui.activities.SingleFragmentActivity
 import rx.SingleSubscriber
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*

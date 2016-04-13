@@ -3,7 +3,7 @@ package com.mariotti.developer.futureclock.ui.activities
 import android.content.Context
 import android.content.Intent
 import android.support.v4.app.Fragment
-import com.mariotti.developer.futureclock.activities.SingleFragmentActivity
+import com.mariotti.developer.futureclock.ui.activities.SingleFragmentActivity
 
 import com.mariotti.developer.futureclock.ui.fragments.ListOfAlarmFragment
 

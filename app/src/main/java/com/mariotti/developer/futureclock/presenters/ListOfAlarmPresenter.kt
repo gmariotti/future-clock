@@ -1,8 +1,6 @@
 package com.mariotti.developer.futureclock.presenters
 
-interface ListOfAlarmPresenter {
+interface ListOfAlarmPresenter : BasePresenter {
 
 	fun loadAlarms()
-
-	fun release()
 }
