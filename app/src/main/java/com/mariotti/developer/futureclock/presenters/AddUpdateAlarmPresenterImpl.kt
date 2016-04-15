@@ -2,7 +2,6 @@ package com.mariotti.developer.futureclock.presenters
 
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.AlarmRepository
-import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenter
 import com.mariotti.developer.futureclock.ui.fragments.AddUpdateAlarmScreen
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -11,7 +10,6 @@ import java.util.*
 class AddUpdateAlarmPresenterImpl(val screen: AddUpdateAlarmScreen, val repository: AlarmRepository) :
 		AddUpdateAlarmPresenter {
 
-	// TODO - is correct to use a single subscription??
 	private var subscription: Subscription? = null
 
 	override fun loadAlarm(alarmID: UUID) {
@@ -20,9 +18,9 @@ class AddUpdateAlarmPresenterImpl(val screen: AddUpdateAlarmScreen, val reposito
 						.observeOn(AndroidSchedulers.mainThread())
 						.subscribe(
 								{ alarm ->
-									screen.showAlarm(alarm)
+									alarm?.let { screen.showAlarm(alarm) }
 								},
-								{ screen.showError() }
+								{ screen.showError(it.message) }
 						)
 	}
 
@@ -32,9 +30,8 @@ class AddUpdateAlarmPresenterImpl(val screen: AddUpdateAlarmScreen, val reposito
 						.observeOn(AndroidSchedulers.mainThread())
 						.subscribe(
 								{ screen.confirmAddUpdate() },
-								{ screen.showError() }
+								{ screen.showError(it.message) }
 						)
-
 	}
 
 	override fun updateAlarm(alarm: Alarm) {
@@ -43,7 +40,7 @@ class AddUpdateAlarmPresenterImpl(val screen: AddUpdateAlarmScreen, val reposito
 						.observeOn(AndroidSchedulers.mainThread())
 						.subscribe(
 								{ screen.confirmAddUpdate() },
-								{ screen.showError() }
+								{ screen.showError(it.message) }
 						)
 	}
 

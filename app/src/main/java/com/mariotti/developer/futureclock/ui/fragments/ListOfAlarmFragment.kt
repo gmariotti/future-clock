@@ -1,7 +1,6 @@
 package com.mariotti.developer.futureclock.ui.fragments
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
@@ -11,22 +10,15 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import com.mariotti.developer.futureclock.R
-import com.mariotti.developer.futureclock.ui.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.activities.FiredAlarmActivity
-import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
-import com.mariotti.developer.futureclock.controllers.fragments.AlarmAdapter
-import com.mariotti.developer.futureclock.controllers.fragments.ModifyOrUpdateAlarm
 import com.mariotti.developer.futureclock.controllers.getNextAlarm
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.AlarmRepositoryImpl
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenterImpl
+import com.mariotti.developer.futureclock.ui.activities.AlarmCreateOrUpdateActivity
 import com.mariotti.developer.futureclock.ui.adapters.ListOfAlarmAdapter
-import rx.Single
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import java.util.*
 
 class ListOfAlarmFragment : Fragment(), MainScreen {
@@ -34,8 +26,11 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 	lateinit private var createAlarmFab: FloatingActionButton
 	lateinit private var alarmListRecyclerView: RecyclerView
 	lateinit private var recyclerViewAdapter: ListOfAlarmAdapter
-	lateinit private var listOfAlarmPresenter: ListOfAlarmPresenter
+	private val listOfAlarmPresenter: ListOfAlarmPresenter by lazy {
+		ListOfAlarmPresenterImpl(this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
+	}
 
+	// TODO - find a better solution
 	private var mAlarmToFireID: UUID = UUID(0L, 0L)
 
 	companion object {
@@ -50,7 +45,7 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		recyclerViewAdapter = ListOfAlarmAdapter(listOf<Alarm>())
+		recyclerViewAdapter = ListOfAlarmAdapter(listOfAlarmPresenter, listOf<Alarm>())
 		setHasOptionsMenu(true)
 	}
 
@@ -59,19 +54,21 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 
 		createAlarmFab = view.findViewById(R.id.alarm_fab) as FloatingActionButton
 		createAlarmFab.setOnClickListener {
-			val intent = AlarmCreateOrUpdateActivity.newIntent(activity, null)
-			startActivityForResult(intent, REQUEST_CODE_ALARM_MANAGEMENT)
+			createUpdateRequest()
 		}
 
 		alarmListRecyclerView = view.findViewById(R.id.alarms_recycler_view) as RecyclerView
 		alarmListRecyclerView.layoutManager = LinearLayoutManager(activity)
 		alarmListRecyclerView.adapter = recyclerViewAdapter
 
-		listOfAlarmPresenter = ListOfAlarmPresenterImpl(
-				this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
 		listOfAlarmPresenter.loadAlarms()
 
 		return view
+	}
+
+	override fun createUpdateRequest(alarmID: UUID?) {
+		val intent = AlarmCreateOrUpdateActivity.newIntent(activity, alarmID)
+		startActivityForResult(intent, REQUEST_CODE_ALARM_MANAGEMENT)
 	}
 
 	override fun showAlarms(alarms: List<Alarm>) {
@@ -96,6 +93,7 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 
 		when (requestCode) {
 			REQUEST_CODE_ALARM_MANAGEMENT -> {
+				listOfAlarmPresenter.loadAlarms()
 				//updateNextAlarmToFire()
 			}
 		}
@@ -132,8 +130,4 @@ class ListOfAlarmFragment : Fragment(), MainScreen {
 			else -> return super.onOptionsItemSelected(item)
 		}
 	}
-
-	/*override fun notifyChangedAlarm() {
-		updateNextAlarmToFire()
-	}*/
 }

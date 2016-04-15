@@ -21,5 +21,5 @@ interface AlarmRepository {
 	fun deleteAlarm(idAlarm: UUID): Observable<Unit>
 
 	@Throws(Exception::class)
-	fun getAlarm(idAlarm: UUID): Observable<Alarm>
+	fun getAlarm(idAlarm: UUID): Observable<Alarm?>
 }

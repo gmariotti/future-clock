@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.controllers.fragments
+package com.mariotti.developer.futureclock.ui.fragments
 
 import android.app.Activity
 import android.content.Intent
@@ -20,8 +20,6 @@ import com.mariotti.developer.futureclock.models.AlarmRepositoryImpl
 import com.mariotti.developer.futureclock.models.WeekDay
 import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenterImpl
-import com.mariotti.developer.futureclock.ui.fragments.AddUpdateAlarmScreen
-import com.mariotti.developer.futureclock.ui.fragments.TimePickerFragment
 import com.mariotti.developer.futureclock.util.addDay
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.hasDay
@@ -41,7 +39,9 @@ class CreateOrUpdateAlarmFragment : Fragment(), AddUpdateAlarmScreen {
 	lateinit private var daysTextView: Array<TextView>
 	lateinit private var activeSwitch: Switch
 	lateinit private var confirmButton: Button
-	lateinit private var presenter: AddUpdateAlarmPresenter
+	private val presenter: AddUpdateAlarmPresenter by lazy {
+		AddUpdateAlarmPresenterImpl(this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
+	}
 
 	companion object {
 		private val TAG = "CreateOrUpdateAlarmFragment"
@@ -65,8 +65,6 @@ class CreateOrUpdateAlarmFragment : Fragment(), AddUpdateAlarmScreen {
 		val view = inflater.inflate(R.layout.fragment_alarm, container, false)
 
 		initNoAlarmDependencies(view)
-		presenter = AddUpdateAlarmPresenterImpl(
-				this, AlarmRepositoryImpl.getInstance(activity.applicationContext))
 		arguments?.let {
 			val alarmUUID = arguments.getSerializable(UUID_ARG) as? UUID
 			alarmUUID?.let {
@@ -192,11 +190,17 @@ class CreateOrUpdateAlarmFragment : Fragment(), AddUpdateAlarmScreen {
 		activity.finish()
 	}
 
-	override fun showError() {
+	override fun showError(message: String?) {
 		view?.let {
 			Snackbar.make(it, "Error in the operation", Snackbar.LENGTH_SHORT)
 					.show()
+			Log.d(TAG, message ?: "Error in the operation")
 		}
+	}
+
+	override fun onDestroyView() {
+		super.onDestroyView()
+		presenter.release()
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {

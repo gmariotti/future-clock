@@ -8,5 +8,5 @@ interface AddUpdateAlarmScreen {
 
 	fun confirmAddUpdate()
 
-	fun showError()
+	fun showError(message: String?)
 }

@@ -8,11 +8,14 @@ import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.models.Alarm
+import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenter
+import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenter
 import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
 import com.mariotti.developer.futureclock.util.getShortDaysString
 import java.util.*
 
-class ListOfAlarmAdapter(private var alarms: List<Alarm>) : RecyclerView.Adapter<ListOfAlarmAdapter.AlarmHolder>() {
+class ListOfAlarmAdapter(private val presenter: ListOfAlarmPresenter, private var mAlarms: List<Alarm>) :
+		RecyclerView.Adapter<ListOfAlarmAdapter.AlarmHolder>() {
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmHolder {
 		val layoutInflater = LayoutInflater.from(parent.context)
@@ -22,32 +25,25 @@ class ListOfAlarmAdapter(private var alarms: List<Alarm>) : RecyclerView.Adapter
 	}
 
 	override fun onBindViewHolder(holder: AlarmHolder, position: Int) {
-		val alarm = alarms[position]
+		val alarm = mAlarms[position]
 		holder.bindAlarm(alarm, position)
 	}
 
 	override fun getItemCount(): Int {
-		return alarms.size
+		return mAlarms.size
 	}
 
 	fun setAlarms(alarms: List<Alarm>) {
-		this.alarms = alarms
+		mAlarms = alarms
 		this.notifyDataSetChanged()
 	}
 
-	fun modifyAlarm(uuid: UUID) {
-		//mModifyOrUpdateAlarm.modifyAlarm(uuid)
+	fun modifyAlarm(alarmID: UUID) {
+		presenter.requestUpdate(alarmID)
 	}
 
 	fun deleteAlarm(uuid: UUID) {
-		//mModifyOrUpdateAlarm.deleteAlarm(uuid)
-	}
-
-	fun updateAlarmInList(alarm: Alarm, position: Int): Unit {
-		setAlarms(alarms.mapIndexed { index, listAlarm ->
-			if (index == position) alarm else listAlarm
-		})
-		//mFragment.notifyChangedAlarm()
+		throw UnsupportedOperationException()
 	}
 
 	inner class AlarmHolder(itemView: View, private val mAdapter: ListOfAlarmAdapter) :
