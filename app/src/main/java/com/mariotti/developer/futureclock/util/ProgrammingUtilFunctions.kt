@@ -12,7 +12,7 @@ fun makeNotificationFromAlarm(context: Context, alarm: Alarm) {
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle("WhatsUpClock")
                     .setContentText(
-                            "${getHourAndMinuteAsString(alarm.hour, alarm.minute)} - " +
+                            "${getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute())} - " +
                                     "${getShortDaysString(alarm)}"
                     )
     val notificationManager: NotificationManager =

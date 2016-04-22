@@ -6,17 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.support.v4.app.Fragment
 import android.util.Log
-import com.mariotti.developer.futureclock.controllers.RxDatabaseAlarmController
 import com.mariotti.developer.futureclock.controllers.fragments.FiredAlarmFragment
 import com.mariotti.developer.futureclock.controllers.getNearestDayForAlarm
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.ui.activities.MainActivity
-import com.mariotti.developer.futureclock.ui.activities.SingleFragmentActivity
-import rx.SingleSubscriber
-import rx.android.schedulers.AndroidSchedulers
+import com.mariotti.developer.futureclock.ui.activities.BaseActivity
 import java.util.*
 
-class FiredAlarmActivity : SingleFragmentActivity() {
+class FiredAlarmActivity : BaseActivity() {
 
 	override fun createFragment(): Fragment {
 		val uuid = intent.getSerializableExtra(EXTRA_ALARM_FIRED_UUID) as UUID
@@ -35,22 +32,22 @@ class FiredAlarmActivity : SingleFragmentActivity() {
 		}
 
 		fun setActiveAlarm(context: Context, uuid: UUID) {
-			RxDatabaseAlarmController.getInstance(context)
-					.getAlarm(uuid)
-					.observeOn(AndroidSchedulers.mainThread())
-					.subscribe(object : SingleSubscriber<Alarm?>() {
-						override fun onSuccess(alarmFound: Alarm?) {
-							Log.d(TAG, "onSuccess")
-							alarmFound?.let {
-								Log.d(TAG, "an alarm has been found")
-								setPendingIntentForAlarm(context, it)
-							}
-						}
-
-						override fun onError(error: Throwable) {
-							Log.d(TAG, "Error in finding alarm - " + uuid.toString())
-						}
-					})
+//			RxDatabaseAlarmController.getInstance(context)
+			//					.getAlarm(uuid)
+			//					.observeOn(AndroidSchedulers.mainThread())
+			//					.subscribe(object : SingleSubscriber<Alarm?>() {
+			//						override fun onSuccess(alarmFound: Alarm?) {
+			//							Log.d(TAG, "onSuccess")
+			//							alarmFound?.let {
+			//								Log.d(TAG, "an alarm has been found")
+			//								setPendingIntentForAlarm(context, it)
+			//							}
+			//						}
+			//
+			//						override fun onError(error: Throwable) {
+			//							Log.d(TAG, "Error in finding alarm - " + uuid.toString())
+			//						}
+			//					})
 		}
 
 		private fun setPendingIntentForAlarm(context: Context, alarm: Alarm) {

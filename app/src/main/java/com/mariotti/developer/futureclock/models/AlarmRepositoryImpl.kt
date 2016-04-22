@@ -40,14 +40,18 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME}"
 		return database
 				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToList { cursor -> AlarmCursorWrapper(cursor).getAlarmFromDb() }
+				.mapToList { cursor ->
+					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+				}
 	}
 
 	override fun loadActiveAlarms(): Observable<List<Alarm>> {
 		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.ACTIVE} = 1"
 		return database
 				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToList { cursor -> AlarmCursorWrapper(cursor).getAlarmFromDb() }
+				.mapToList { cursor ->
+					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+				}
 	}
 
 	override fun insertAlarm(alarm: Alarm): Observable<Unit> = Observable.fromCallable {
@@ -61,7 +65,7 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 	private fun getContentValues(alarm: Alarm): ContentValues {
 		val values = ContentValues()
 		values.put(AlarmTable.Cols.UUID, alarm.uuid.toString())
-		val time = getHourAndMinuteAsString(alarm.hour, alarm.minute)
+		val time = getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute())
 		values.put(AlarmTable.Cols.TIME, time)
 
 		val days = alarm.days
@@ -73,7 +77,7 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 		values.put(AlarmTable.Cols.SATURDAY, if (hasDay(days, WeekDay.SATURDAY)) 1 else 0)
 		values.put(AlarmTable.Cols.SUNDAY, if (hasDay(days, WeekDay.SUNDAY)) 1 else 0)
 
-		values.put(AlarmTable.Cols.TIMEZONE, alarm.timezone)
+		values.put(AlarmTable.Cols.TIMEZONE, alarm.getTimeZone())
 		values.put(AlarmTable.Cols.ACTIVE, if (alarm.active) 1 else 0)
 		return values
 	}
@@ -91,14 +95,20 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 		}
 	}.subscribeOn(Schedulers.io())
 
-	override fun deleteAlarm(idAlarm: UUID): Observable<Unit> {
-		throw UnsupportedOperationException()
-	}
+	override fun deleteAlarm(idAlarm: UUID): Observable<Unit> = Observable.fromCallable {
+		database.performTransaction {
+			val numRowsDeleted = database.delete(
+					AlarmTable.NAME, "${AlarmTable.Cols.UUID} = ?", idAlarm.toString())
+			if (numRowsDeleted != 1) throw Exception("Error deleting alarm")
+		}
+	}.subscribeOn(Schedulers.io())
 
 	override fun getAlarm(idAlarm: UUID): Observable<Alarm?> {
-		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.UUID} = '${idAlarm.toString()}'"
+		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.UUID}='${idAlarm.toString()}'"
 		return database
 				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToOne { cursor -> AlarmCursorWrapper(cursor).getAlarmFromDb() }
+				.mapToOne { cursor ->
+					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+				}
 	}
 }

@@ -6,9 +6,6 @@ import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.WeekDay
 import java.util.*
 
-fun getDefaultAlarmInstance(): Alarm =
-        Alarm(UUID.randomUUID(), Calendar.getInstance(), intArrayOf(), false)
-
 fun getShortDaysString(alarm: Alarm): String {
     var result = StringBuilder()
     val days = alarm.days

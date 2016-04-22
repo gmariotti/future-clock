@@ -46,12 +46,12 @@ private fun initializeHourMinuteAndTimezone(alarm: Alarm, day: Calendar): Calend
 }
 
 private fun initializeHourAndMinute(alarm: Alarm, dayToReturn: Calendar) {
-	dayToReturn.set(Calendar.HOUR_OF_DAY, alarm.hour)
-	dayToReturn.set(Calendar.MINUTE, alarm.minute)
+	dayToReturn.set(Calendar.HOUR_OF_DAY, alarm.getHour())
+	dayToReturn.set(Calendar.MINUTE, alarm.getMinute())
 }
 
 private fun initializeTimezone(alarm: Alarm, dayToReturn: Calendar) {
-	if (alarm.timezone != dayToReturn.timeZone.displayName) {
+	if (alarm.getTimeZone() != dayToReturn.timeZone.displayName) {
 		// TODO - modify timezone accordingly
 	}
 }

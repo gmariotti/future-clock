@@ -11,7 +11,6 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.mariotti.developer.futureclock.R;
-import com.mariotti.developer.futureclock.controllers.DatabaseAlarmController;
 import com.mariotti.developer.futureclock.models.Alarm;
 import com.mariotti.developer.futureclock.util.AlarmUtil;
 

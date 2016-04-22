@@ -1,4 +1,4 @@
-package com.mariotti.developer.futureclock.ui.fragments
+package com.mariotti.developer.futureclock.ui.activities
 
 import com.mariotti.developer.futureclock.models.Alarm
 import java.util.*

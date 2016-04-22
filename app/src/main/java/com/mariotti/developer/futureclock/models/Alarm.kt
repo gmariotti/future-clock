@@ -2,34 +2,54 @@ package com.mariotti.developer.futureclock.models
 
 import java.util.*
 
+data class DatabaseAlarm(val uuid: UUID = UUID.randomUUID(), val hour: Int = 0, val minute: Int = 0,
+                         val days: IntArray = intArrayOf(),
+                         val timezone: String = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT),
+                         var active: Boolean = false)
 
-class Alarm(val uuid: UUID = UUID.randomUUID(), hour: Int = 0, minute: Int = 0, days: IntArray,
-            val timezone: String, var active: Boolean = false) {
-    val hour: Int
-    val minute: Int
-    val days: IntArray
+class Alarm(val uuid: UUID = UUID.randomUUID(),
+            val time: HourMinuteAndTimeZone = HourMinuteAndTimeZone.getHourMinuteAndTimeZone(),
+            days: IntArray = intArrayOf(), val active: Boolean = false) {
+	val days: IntArray
 
-    // valid only with primary constructor
-    init {
-        this.hour = hour % 24
-        this.minute = minute % 60
-        this.days = WeekDay.reorderDays(days)
-    }
+	init {
+		this.days = WeekDay.reorderDays(days)
+	}
 
-    constructor(uuid: UUID = UUID.randomUUID(), time: Calendar = Calendar.getInstance(),
-                days: IntArray, active: Boolean = false) :
-    this(uuid, time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), days,
-            time.timeZone.getDisplayName(false, TimeZone.SHORT), active)
+	companion object {
+		fun getDatabaseAlarm(alarm: Alarm): DatabaseAlarm {
+			val (hour, minute, timezone) = alarm.time
+			return DatabaseAlarm(alarm.uuid, hour, minute, alarm.days, timezone, alarm.active)
+		}
 
-    override fun toString(): String {
-        val daysToString = days.joinToString { WeekDay.getShortName(it) }
-        return "Alarm(uuid=$uuid, timezone='$timezone', active=$active, hour=$hour, minute=$minute, days=$daysToString)"
-    }
+		fun getAlarm(dbAlarm: DatabaseAlarm): Alarm {
+			val time = HourMinuteAndTimeZone
+					.getHourMinuteAndTimeZone(dbAlarm.hour, dbAlarm.minute, dbAlarm.timezone)
+			return Alarm(dbAlarm.uuid, time, dbAlarm.days, dbAlarm.active)
+		}
+	}
 
-    fun copy(uuid: UUID = this.uuid, hour: Int = this.hour, minute: Int = this.minute,
-             days: IntArray = this.days, timezone: String = this.timezone, active: Boolean = this.active)
-            : Alarm = Alarm(uuid, hour, minute, days, timezone, active)
+	fun getHour(): Int = time.hour
 
-    fun toShortString(): String = "Alarm(hour=$hour, minute=$minute, " +
-            "days=${days.joinToString { WeekDay.getShortName(it) }})"
+	fun getMinute(): Int = time.minute
+
+	fun getTimeZone(): String = time.timezone
+
+	fun copy(uuid: UUID = this.uuid,
+	         time: HourMinuteAndTimeZone = HourMinuteAndTimeZone.getHourMinuteAndTimeZone(),
+	         days: IntArray = this.days, active: Boolean = this.active): Alarm = Alarm(uuid, time, days, active)
+
+	override fun equals(other: Any?): Boolean {
+		when (other) {
+			is Alarm ->
+				if (other.uuid != this.uuid || other.active != this.active ||
+						other.days != this.days || other.time != this.time) return false
+				else return true
+			else -> return false
+		}
+	}
+
+	override fun hashCode(): Int {
+		return super.hashCode()
+	}
 }

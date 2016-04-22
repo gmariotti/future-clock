@@ -2,7 +2,7 @@ package com.mariotti.developer.futureclock.presenters
 
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.AlarmRepository
-import com.mariotti.developer.futureclock.ui.fragments.AddUpdateAlarmScreen
+import com.mariotti.developer.futureclock.ui.activities.AddUpdateAlarmScreen
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import java.util.*

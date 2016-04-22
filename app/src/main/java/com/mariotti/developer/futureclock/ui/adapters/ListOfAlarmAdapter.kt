@@ -69,7 +69,7 @@ class ListOfAlarmAdapter(private val presenter: ListOfAlarmPresenter, private va
 			mAlarm = alarm
 			mPosition = position
 
-			mTimeTextView.text = getHourAndMinuteAsString(alarm.hour, alarm.minute)
+			mTimeTextView.text = getHourAndMinuteAsString(alarm.getHour(), alarm.getMinute())
 			mDaysTextView.text = getShortDaysString(alarm)
 			mActiveSwitch.isChecked = alarm.active
 

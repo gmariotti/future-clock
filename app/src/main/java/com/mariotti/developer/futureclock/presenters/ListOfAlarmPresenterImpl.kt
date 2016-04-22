@@ -1,9 +1,10 @@
 package com.mariotti.developer.futureclock.presenters
 
 import com.mariotti.developer.futureclock.models.AlarmRepository
-import com.mariotti.developer.futureclock.ui.fragments.MainScreen
+import com.mariotti.developer.futureclock.ui.activities.MainScreen
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
+import java.lang.ref.WeakReference
 import java.util.*
 
 class ListOfAlarmPresenterImpl(val mainScreen: MainScreen, val alarmRepository: AlarmRepository) :

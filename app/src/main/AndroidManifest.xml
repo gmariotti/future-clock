@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.activities.AlarmCreateOrUpdateActivity"
+            android:name=".ui.activities.AlarmCreateUpdateActivity"
             android:parentActivityName=".ui.activities.MainActivity">
         </activity>
         <activity android:name=".activities.FiredAlarmActivity">

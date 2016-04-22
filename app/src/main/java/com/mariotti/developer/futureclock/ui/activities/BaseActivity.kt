@@ -7,10 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import com.mariotti.developer.futureclock.BuildConfig
 import com.mariotti.developer.futureclock.R
 
-abstract class SingleFragmentActivity : AppCompatActivity() {
-    protected abstract fun createFragment(): Fragment
-
-    protected val layoutResId: Int = R.layout.activity_fragment
+abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,16 +27,6 @@ abstract class SingleFragmentActivity : AppCompatActivity() {
                             .penaltyLog()
                             .build()
             )
-        }
-
-        setContentView(layoutResId)
-
-        val fragmentManager = supportFragmentManager
-        var fragment: Fragment? = fragmentManager.findFragmentById(R.id.fragment_container)
-
-        if (fragment == null) {
-            fragment = createFragment()
-            fragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit()
         }
     }
 }
