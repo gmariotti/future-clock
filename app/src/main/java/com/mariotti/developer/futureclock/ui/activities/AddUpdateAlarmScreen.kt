@@ -8,5 +8,7 @@ interface AddUpdateAlarmScreen {
 
 	fun confirmAddUpdate()
 
+	fun updateTime(hourOfDay: Int, minute: Int)
+
 	fun showError(message: String?)
 }

@@ -1,13 +1,13 @@
 package com.mariotti.developer.futureclock.extensions
 
-import android.database.sqlite.SQLiteDatabase
+import com.squareup.sqlbrite.BriteDatabase
 
-inline fun SQLiteDatabase.performTransaction(dbOperations: () -> Unit) {
-    this.beginTransaction()
-    try {
-        dbOperations()
-        this.setTransactionSuccessful()
-    } finally {
-        this.endTransaction()
-    }
+inline fun BriteDatabase.performTransaction(dbOperations: () -> Unit) {
+	val transaction = this.newTransaction()
+	try {
+		dbOperations()
+		transaction.markSuccessful()
+	} finally {
+		transaction.end()
+	}
 }

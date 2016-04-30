@@ -2,17 +2,18 @@ package com.mariotti.developer.futureclock.models
 
 import android.content.ContentValues
 import android.content.Context
+import android.util.Log
 import com.mariotti.developer.futureclock.extensions.performTransaction
+import com.mariotti.developer.futureclock.functions.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.functions.hasDay
 import com.mariotti.developer.futureclock.models.database.AlarmBaseHelper
 import com.mariotti.developer.futureclock.models.database.AlarmCursorWrapper
 import com.mariotti.developer.futureclock.models.database.AlarmDbSchema.AlarmTable
-import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
-import com.mariotti.developer.futureclock.util.hasDay
 import com.squareup.sqlbrite.BriteDatabase
 import com.squareup.sqlbrite.SqlBrite
 import rx.Observable
 import rx.schedulers.Schedulers
-import java.util.*
+import java.util.UUID
 
 class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepository {
 
@@ -25,6 +26,7 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 	}
 
 	companion object {
+		private val TAG = "AlarmRepositoryImpl"
 		private var INSTANCE: AlarmRepositoryImpl? = null
 
 		fun getInstance(context: Context): AlarmRepositoryImpl {
@@ -39,26 +41,34 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 	override fun loadAlarms(): Observable<List<Alarm>> {
 		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME}"
 		return database
-				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToList { cursor ->
-					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
-				}
+						.createQuery(AlarmTable.NAME, sqlQuery)
+						.mapToList { cursor ->
+							Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+						}
 	}
 
 	override fun loadActiveAlarms(): Observable<List<Alarm>> {
-		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.ACTIVE} = 1"
+		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.ACTIVE}=1"
 		return database
-				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToList { cursor ->
-					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
-				}
+						.createQuery(AlarmTable.NAME, sqlQuery)
+						.mapToList { cursor ->
+							Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+						}
 	}
 
 	override fun insertAlarm(alarm: Alarm): Observable<Unit> = Observable.fromCallable {
 		val dbAlarm = getContentValues(alarm)
-		database.performTransaction {
+		/*database.performTransaction {
 			val rowID = database.insert(AlarmTable.NAME, dbAlarm)
 			if (rowID == -1L) throw Exception("Error in insertAlarm")
+		}*/
+		val transaction = database.newTransaction()
+		try {
+			val rowID = database.insert(AlarmTable.NAME, dbAlarm)
+			Log.d(TAG, "rowID = $rowID")
+			transaction.markSuccessful()
+		} finally {
+			transaction.end()
 		}
 	}.subscribeOn(Schedulers.io())
 
@@ -86,10 +96,10 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 		val dbAlarm = getContentValues(alarm)
 		database.performTransaction {
 			val rowID = database.update(
-					AlarmTable.NAME,
-					dbAlarm,
-					"${AlarmTable.Cols.UUID} = ?",
-					alarm.uuid.toString()
+							AlarmTable.NAME,
+							dbAlarm,
+							"${AlarmTable.Cols.UUID} = ?",
+							alarm.uuid.toString()
 			)
 			if (rowID == -1) throw Exception("Error in updateAlarm")
 		}
@@ -98,7 +108,7 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 	override fun deleteAlarm(idAlarm: UUID): Observable<Unit> = Observable.fromCallable {
 		database.performTransaction {
 			val numRowsDeleted = database.delete(
-					AlarmTable.NAME, "${AlarmTable.Cols.UUID} = ?", idAlarm.toString())
+							AlarmTable.NAME, "${AlarmTable.Cols.UUID} = ?", idAlarm.toString())
 			if (numRowsDeleted != 1) throw Exception("Error deleting alarm")
 		}
 	}.subscribeOn(Schedulers.io())
@@ -106,9 +116,9 @@ class AlarmRepositoryImpl private constructor(context: Context) : AlarmRepositor
 	override fun getAlarm(idAlarm: UUID): Observable<Alarm?> {
 		val sqlQuery = "SELECT * FROM ${AlarmTable.NAME} WHERE ${AlarmTable.Cols.UUID}='${idAlarm.toString()}'"
 		return database
-				.createQuery(AlarmTable.NAME, sqlQuery)
-				.mapToOne { cursor ->
-					Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
-				}
+						.createQuery(AlarmTable.NAME, sqlQuery)
+						.mapToOne { cursor ->
+							Alarm.getAlarm(AlarmCursorWrapper(cursor).getAlarmFromDb())
+						}
 	}
 }

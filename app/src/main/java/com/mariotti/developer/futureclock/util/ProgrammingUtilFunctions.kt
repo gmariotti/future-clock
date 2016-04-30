@@ -4,6 +4,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.support.v4.app.NotificationCompat
 import com.mariotti.developer.futureclock.R
+import com.mariotti.developer.futureclock.functions.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.functions.getShortDaysString
 import com.mariotti.developer.futureclock.models.Alarm
 
 fun makeNotificationFromAlarm(context: Context, alarm: Alarm) {

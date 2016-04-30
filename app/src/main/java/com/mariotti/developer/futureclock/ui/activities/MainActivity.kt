@@ -1,10 +1,10 @@
 package com.mariotti.developer.futureclock.ui.activities
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -17,23 +17,25 @@ import com.mariotti.developer.futureclock.models.AlarmRepositoryImpl
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenterImpl
 import com.mariotti.developer.futureclock.ui.adapters.ListOfAlarmAdapter
-import com.mariotti.developer.futureclock.ui.activities.MainScreen
 import java.util.*
 
 class MainActivity : BaseActivity(), MainScreen {
+
 	private val createAlarmFab: FloatingActionButton by bindView(R.id.alarm_fab)
 	private val alarmListRecyclerView: RecyclerView by bindView(R.id.alarms_recycler_view)
-	private val recyclerViewAdapter: ListOfAlarmAdapter by lazy {
-		ListOfAlarmAdapter(listOfAlarmPresenter, listOf<Alarm>())
+	private val alarmListAdapter: ListOfAlarmAdapter by lazy {
+		ListOfAlarmAdapter(alarmListPresenter, listOf<Alarm>())
 	}
-	private val listOfAlarmPresenter: ListOfAlarmPresenter by lazy {
-		Log.d(MainActivity.TAG, "listOfAlarmPresenter by lazy")
+	private val alarmListPresenter: ListOfAlarmPresenter by lazy {
+		Log.d(MainActivity.TAG, "alarmListPresenter by lazy")
 		ListOfAlarmPresenterImpl(this, AlarmRepositoryImpl.getInstance(this))
 	}
 
 	companion object {
 		private val TAG = "MainActivity"
 		private val REQUEST_CODE_ALARM_MANAGEMENT = 1
+
+		fun newIntent(context: Context): Intent = Intent(context, MainActivity::class.java)
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +44,8 @@ class MainActivity : BaseActivity(), MainScreen {
 		setContentView(R.layout.main_layout)
 		createAlarmFab.setOnClickListener { createUpdateRequest() }
 		alarmListRecyclerView.layoutManager = LinearLayoutManager(this)
-		alarmListRecyclerView.adapter = recyclerViewAdapter
+		alarmListRecyclerView.adapter = alarmListAdapter
+		alarmListPresenter.loadAlarms()
 	}
 
 	override fun createUpdateRequest(alarmID: UUID?) {
@@ -52,11 +55,11 @@ class MainActivity : BaseActivity(), MainScreen {
 
 	override fun onDestroy() {
 		super.onDestroy()
-		listOfAlarmPresenter.release()
+		alarmListPresenter.release()
 	}
 
 	override fun showAlarms(alarms: List<Alarm>) {
-		recyclerViewAdapter.setAlarms(alarms)
+		alarmListAdapter.setAlarms(alarms)
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -64,8 +67,8 @@ class MainActivity : BaseActivity(), MainScreen {
 
 		when (requestCode) {
 			REQUEST_CODE_ALARM_MANAGEMENT -> {
-				listOfAlarmPresenter.loadAlarms()
-//				updateNextAlarmToFire
+				alarmListPresenter.loadAlarms()
+				//				updateNextAlarmToFire
 			}
 		}
 	}

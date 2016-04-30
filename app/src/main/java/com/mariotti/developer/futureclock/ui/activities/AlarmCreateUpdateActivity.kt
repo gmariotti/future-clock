@@ -12,6 +12,10 @@ import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
 import com.mariotti.developer.futureclock.extensions.getColorBasedOnApi23
+import com.mariotti.developer.futureclock.functions.addDay
+import com.mariotti.developer.futureclock.functions.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.functions.hasDay
+import com.mariotti.developer.futureclock.functions.removeDay
 import com.mariotti.developer.futureclock.kotterknife.bindView
 import com.mariotti.developer.futureclock.kotterknife.bindViews
 import com.mariotti.developer.futureclock.models.Alarm
@@ -20,12 +24,9 @@ import com.mariotti.developer.futureclock.models.HourMinuteAndTimeZone
 import com.mariotti.developer.futureclock.models.WeekDay
 import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenterImpl
-import com.mariotti.developer.futureclock.ui.activities.AddUpdateAlarmScreen
-import com.mariotti.developer.futureclock.util.addDay
-import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
-import com.mariotti.developer.futureclock.util.hasDay
-import com.mariotti.developer.futureclock.util.removeDay
-import java.util.*
+import java.util.Calendar
+import java.util.TimeZone
+import java.util.UUID
 
 class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 
@@ -40,9 +41,9 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 	private val activeSwitch: Switch by bindView<Switch>(R.id.alarm_switch)
 	private val confirmButton: Button by bindView<Button>(R.id.alarm_confirm_button)
 	private val daysTextView: List<TextView> by bindViews(
-			R.id.alarm_textview_sun, R.id.alarm_textview_mon, R.id.alarm_textview_tue,
-			R.id.alarm_textview_wed, R.id.alarm_textview_thu, R.id.alarm_textview_fri,
-			R.id.alarm_textview_sat)
+					R.id.alarm_textview_sun, R.id.alarm_textview_mon, R.id.alarm_textview_tue,
+					R.id.alarm_textview_wed, R.id.alarm_textview_thu, R.id.alarm_textview_fri,
+					R.id.alarm_textview_sat)
 	private val presenter: AddUpdateAlarmPresenter by lazy {
 		Log.d(TAG, "AddUpdateAlarmPresenter by lazy")
 		AddUpdateAlarmPresenterImpl(this, AlarmRepositoryImpl.getInstance(this))
@@ -51,15 +52,12 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 	companion object {
 		private val TAG = "AlarmCreateUpdateActivity"
 		private val EXTRA_ALARM_UUID =
-				"com.mariotti.developer.futureclock.ui.activities.alarm_uuid"
+						"com.mariotti.developer.futureclock.ui.activities.alarm_uuid"
 
 		fun newIntent(packageContext: Context, alarmUUID: UUID?): Intent {
 			val intent = Intent(packageContext, AlarmCreateUpdateActivity::class.java)
 
-			alarmUUID?.let {
-				intent.putExtra(EXTRA_ALARM_UUID, alarmUUID)
-				Log.d(TAG, "UUID is $alarmUUID")
-			}
+			alarmUUID?.let { intent.putExtra(EXTRA_ALARM_UUID, alarmUUID) }
 
 			return intent
 		}
@@ -85,14 +83,14 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 
 	private fun initDaysListTextView() {
 		val textViewIDs: IntArray = intArrayOf(R.id.alarm_textview_sun, R.id.alarm_textview_mon,
-				R.id.alarm_textview_tue, R.id.alarm_textview_wed, R.id.alarm_textview_thu,
-				R.id.alarm_textview_fri, R.id.alarm_textview_sat)
+						R.id.alarm_textview_tue, R.id.alarm_textview_wed, R.id.alarm_textview_thu,
+						R.id.alarm_textview_fri, R.id.alarm_textview_sat)
 		textViewIDs.forEachIndexed { index, id ->
 			initializeDayTextView(daysTextView[index], WeekDay.WEEK[index])
 		}
 	}
 
-	private fun initializeDayTextView(textView: TextView, day: Int): TextView {
+	private fun initializeDayTextView(textView: TextView, day: Int) {
 		textView.setOnClickListener {
 			if (textView.currentTextColor == resources.getColorBasedOnApi23(R.color.grey)) {
 				textView.setTextColor(resources.getColorBasedOnApi23(R.color.colorAccent))
@@ -104,34 +102,30 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 				Log.d(TAG, "removed day ${WeekDay.getShortName(day)}")
 			}
 		}
-
-		return textView
 	}
 
 	private fun initTimeTextView() {
 		timeTextView.text = getHourAndMinuteAsString(alarmHour, alarmMinute)
 		timeTextView.setOnClickListener {
-			val dialog = TimePickerDialog(
-					this,
-					TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-						alarmHour = hourOfDay
-						alarmMinute = minute
-						timeTextView.text = getHourAndMinuteAsString(alarmHour, alarmMinute)
-					}, alarmHour, alarmMinute, true)
+			val dialog = TimePickerDialog(this,
+							TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+								alarmHour = hourOfDay
+								alarmMinute = minute
+								timeTextView.text = getHourAndMinuteAsString(alarmHour, alarmMinute)
+							}, alarmHour, alarmMinute, true)
 			dialog.show()
 		}
 	}
 
 	private fun initActiveSwitch() {
-		//		activeSwitch = view.findViewById(R.id.alarm_switch) as Switch
 		activeSwitch.isChecked = false
 		activeSwitch.setOnClickListener { alarmIsActive = !alarmIsActive }
 	}
 
 	private fun initConfirmButton() {
 		confirmButton.setOnClickListener {
-			val time = HourMinuteAndTimeZone.getHourMinuteAndTimeZone(alarmHour, alarmMinute,
-					TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT))
+			val time = HourMinuteAndTimeZone.getFromVariables(alarmHour, alarmMinute,
+							TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT))
 			val alarmToInsert = Alarm(alarmID, time, alarmDays, alarmIsActive)
 
 			if (isUpdateOperation) presenter.updateAlarm(alarmToInsert)
@@ -146,7 +140,9 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 	private fun setAlarmDependencies(alarm: Alarm) {
 		initAlarmDependencies(alarm)
 		val colorResources = resources
-		daysTextView.forEachIndexed { index, textView -> setDayTextView(textView, index + 1, colorResources) }
+		daysTextView.forEachIndexed { index, textView ->
+			setDayTextView(textView, WeekDay.WEEK[index], colorResources)
+		}
 		timeTextView.text = getHourAndMinuteAsString(alarmHour, alarmMinute)
 		activeSwitch.isChecked = alarmIsActive
 	}
@@ -170,6 +166,12 @@ class AlarmCreateUpdateActivity : BaseActivity(), AddUpdateAlarmScreen {
 	override fun confirmAddUpdate() {
 		this.setResult(Activity.RESULT_OK)
 		this.finish()
+	}
+
+	override fun updateTime(hourOfDay: Int, minute: Int) {
+		alarmHour = hourOfDay
+		alarmMinute = minute
+		timeTextView.text = getHourAndMinuteAsString(alarmHour, alarmMinute)
 	}
 
 	override fun showError(message: String?) {

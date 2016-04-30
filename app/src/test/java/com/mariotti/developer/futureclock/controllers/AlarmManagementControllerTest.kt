@@ -20,14 +20,14 @@ class AlarmManagementControllerTest {
         today.set(2016, Calendar.DECEMBER, 31, 18, 0)
 
         val timezone = today.timeZone.getDisplayName(false, TimeZone.SHORT)
-        val alarm1 = Alarm(UUID.randomUUID(), 18, 7, intArrayOf(WeekDay.MONDAY, WeekDay.FRIDAY),
-                timezone, true)
-        val alarm2 = Alarm(UUID.randomUUID(), 10, 34, intArrayOf(WeekDay.SATURDAY, WeekDay.SUNDAY),
-                timezone, true)
-        val alarm3 = Alarm(UUID.randomUUID(), 5, 11, intArrayOf(WeekDay.THURSDAY),
-                timezone, true)
-        val alarm4 = Alarm(UUID.randomUUID(), 22, 34, intArrayOf(), timezone, false)
-        testAlarms = listOf(alarm1, alarm2, alarm3, alarm4)
+//        val alarm1 = Alarm(UUID.randomUUID(), 18, 7, intArrayOf(WeekDay.MONDAY, WeekDay.FRIDAY),
+//                timezone, true)
+//        val alarm2 = Alarm(UUID.randomUUID(), 10, 34, intArrayOf(WeekDay.SATURDAY, WeekDay.SUNDAY),
+//                timezone, true)
+//        val alarm3 = Alarm(UUID.randomUUID(), 5, 11, intArrayOf(WeekDay.THURSDAY),
+//                timezone, true)
+//        val alarm4 = Alarm(UUID.randomUUID(), 22, 34, intArrayOf(), timezone, false)
+//        testAlarms = listOf(alarm1, alarm2, alarm3, alarm4)
     }
 
     @Test

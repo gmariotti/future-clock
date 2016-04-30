@@ -1,6 +1,4 @@
-@file:JvmName("AlarmUtil")
-
-package com.mariotti.developer.futureclock.util
+package com.mariotti.developer.futureclock.functions
 
 import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.WeekDay

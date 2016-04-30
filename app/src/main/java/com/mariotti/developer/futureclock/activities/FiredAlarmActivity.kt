@@ -15,13 +15,6 @@ import java.util.*
 
 class FiredAlarmActivity : BaseActivity() {
 
-	override fun createFragment(): Fragment {
-		val uuid = intent.getSerializableExtra(EXTRA_ALARM_FIRED_UUID) as UUID
-		Log.d(TAG, "UUID = " + uuid.toString())
-
-		return FiredAlarmFragment.newInstance(uuid)
-	}
-
 	companion object {
 		private val EXTRA_ALARM_FIRED_UUID = "com.mariotti.developer.futureclock.activities.FiredAlarmActivity"
 		private val TAG = "FiredAlarmActivity"

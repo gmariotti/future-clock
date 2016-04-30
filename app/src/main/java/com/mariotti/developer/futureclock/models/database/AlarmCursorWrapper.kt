@@ -31,8 +31,8 @@ class AlarmCursorWrapper(cursor: Cursor) : CursorWrapper(cursor) {
 		val active = getIntFromColumnName(AlarmTable.Cols.ACTIVE)
 
 		val alarm = DatabaseAlarm(UUID.fromString(uuidString),
-				hour, minute, daysReordered,
-				timezone, active == 1)
+						hour, minute, daysReordered,
+						timezone, active == 1)
 
 		return alarm
 	}

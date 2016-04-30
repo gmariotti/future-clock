@@ -7,15 +7,14 @@ import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
+import com.mariotti.developer.futureclock.functions.getHourAndMinuteAsString
+import com.mariotti.developer.futureclock.functions.getShortDaysString
 import com.mariotti.developer.futureclock.models.Alarm
-import com.mariotti.developer.futureclock.presenters.AddUpdateAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenter
-import com.mariotti.developer.futureclock.util.getHourAndMinuteAsString
-import com.mariotti.developer.futureclock.util.getShortDaysString
-import java.util.*
+import java.util.UUID
 
 class ListOfAlarmAdapter(private val presenter: ListOfAlarmPresenter, private var mAlarms: List<Alarm>) :
-		RecyclerView.Adapter<ListOfAlarmAdapter.AlarmHolder>() {
+				RecyclerView.Adapter<ListOfAlarmAdapter.AlarmHolder>() {
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmHolder {
 		val layoutInflater = LayoutInflater.from(parent.context)
@@ -47,7 +46,7 @@ class ListOfAlarmAdapter(private val presenter: ListOfAlarmPresenter, private va
 	}
 
 	inner class AlarmHolder(itemView: View, private val mAdapter: ListOfAlarmAdapter) :
-			RecyclerView.ViewHolder(itemView), View.OnClickListener {
+					RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
 		private val mTimeTextView: TextView
 		private val mDaysTextView: TextView

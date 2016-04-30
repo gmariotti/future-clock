@@ -2,20 +2,21 @@ package com.mariotti.developer.futureclock.presenters
 
 import com.mariotti.developer.futureclock.models.AlarmRepository
 import com.mariotti.developer.futureclock.ui.activities.MainScreen
-import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
-import java.lang.ref.WeakReference
-import java.util.*
+import rx.subscriptions.CompositeSubscription
+import java.util.UUID
 
 class ListOfAlarmPresenterImpl(val mainScreen: MainScreen, val alarmRepository: AlarmRepository) :
-		ListOfAlarmPresenter {
+				ListOfAlarmPresenter {
 
-	private var subscription: Subscription? = null
+	private var subscriptions: CompositeSubscription = CompositeSubscription()
 
 	override fun loadAlarms() {
-		subscription = alarmRepository.loadAlarms()
-				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe { mainScreen.showAlarms(it) }
+		val subscription = alarmRepository.loadAlarms()
+						.map { it.sorted() }
+						.observeOn(AndroidSchedulers.mainThread())
+						.subscribe { mainScreen.showAlarms(it) }
+		subscriptions.add(subscription)
 	}
 
 	override fun requestUpdate(alarmID: UUID) {
@@ -23,9 +24,6 @@ class ListOfAlarmPresenterImpl(val mainScreen: MainScreen, val alarmRepository: 
 	}
 
 	override fun release() {
-		subscription?.let {
-			if (!it.isUnsubscribed) it.unsubscribe()
-		}
-		// TODO - must MainScreen be released?
+		subscriptions.clear()
 	}
 }
