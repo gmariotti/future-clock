@@ -16,6 +16,7 @@ import com.mariotti.developer.futureclock.models.Alarm
 import com.mariotti.developer.futureclock.models.AlarmRepositoryImpl
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenter
 import com.mariotti.developer.futureclock.presenters.ListOfAlarmPresenterImpl
+import com.mariotti.developer.futureclock.settings.SettingsActivity
 import com.mariotti.developer.futureclock.ui.adapters.ListOfAlarmAdapter
 import java.util.*
 
@@ -86,7 +87,8 @@ class MainActivity : BaseActivity(), MainScreen {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		when (item.itemId) {
 			R.id.menu_settings -> {
-				// TODO
+				val intent = Intent(this, SettingsActivity::class.java)
+				startActivity(intent)
 				return true
 			}
 			else -> return super.onOptionsItemSelected(item)

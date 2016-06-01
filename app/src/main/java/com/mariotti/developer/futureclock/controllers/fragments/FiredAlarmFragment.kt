@@ -10,9 +10,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import com.mariotti.developer.futureclock.R
-import com.mariotti.developer.futureclock.controllers.OpenMapWeatherFetchr
+import com.mariotti.developer.futureclock.controllers.OpenWeatherMapFetchr
 import com.mariotti.developer.futureclock.models.Alarm
-import com.mariotti.developer.futureclock.models.OpenMapWeather
+import com.mariotti.developer.futureclock.models.OpenWeatherMap
 import com.mariotti.developer.futureclock.util.makeNotificationFromAlarm
 import rx.Single
 import rx.SingleSubscriber
@@ -55,23 +55,23 @@ class FiredAlarmFragment : Fragment() {
 		manageAlarmFired(uuid)
 
 		mButton!!.setOnClickListener {
-			Single.create(Single.OnSubscribe<com.mariotti.developer.futureclock.models.OpenMapWeather> { singleSubscriber ->
+			Single.create(Single.OnSubscribe<OpenWeatherMap> { singleSubscriber ->
 				try {
-					singleSubscriber.onSuccess(OpenMapWeatherFetchr.parseOpenMapWeather())
+					singleSubscriber.onSuccess(OpenWeatherMapFetchr.parseOpenMapWeather())
 				} catch (e: IOException) {
 					Snackbar.make(getView()!!, "Weather Error IOException", Snackbar.LENGTH_LONG)
 							.show()
 				}
 			}).subscribeOn(Schedulers.io())
 					.observeOn(AndroidSchedulers.mainThread())
-					.subscribe(object : SingleSubscriber<OpenMapWeather>() {
-						override fun onSuccess(openMapWeather: OpenMapWeather) {
+					.subscribe(object : SingleSubscriber<OpenWeatherMap>() {
+						override fun onSuccess(openWeatherMap: OpenWeatherMap) {
 							mTextToSpeech = TextToSpeech(activity,
 									TextToSpeech.OnInitListener {
 										val goodMorning = "Good morning Sir, "
 										mTextToSpeech!!.speak(
 												StringBuilder().append(goodMorning)
-														.append(openMapWeather.toString())
+														.append(openWeatherMap.toString())
 														.toString(),
 												TextToSpeech.QUEUE_FLUSH,
 												null)

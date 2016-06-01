@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mariotti.developer.futureclock.models.OpenMapWeather;
+import com.mariotti.developer.futureclock.models.OpenWeatherMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,9 +14,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class OpenMapWeatherFetchr {
+public class OpenWeatherMapFetchr {
 
-    private static final String TAG = "OpenMapWeatherFetchr";
+    private static final String TAG = "OpenWeatherMapFetchr";
     private static final String API_KEY = "250f51368f953c56b7ea9a125e25213e";
     // JSON is the default format
     private static final Uri ENDPOINT = Uri
@@ -27,7 +27,7 @@ public class OpenMapWeatherFetchr {
             .appendQueryParameter("units", "metric")
             .build();
 
-    public static OpenMapWeather parseOpenMapWeather() throws IOException {
+    public static OpenWeatherMap parseOpenMapWeather() throws IOException {
         // Create an HTTP client
         URL url = new URL(ENDPOINT.toString());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -52,7 +52,7 @@ public class OpenMapWeatherFetchr {
             Log.d(TAG, "Received: " + jsonResult);
 
             Gson gson = new GsonBuilder().create();
-            OpenMapWeather weather = gson.fromJson(jsonResult, OpenMapWeather.class);
+            OpenWeatherMap weather = gson.fromJson(jsonResult, OpenWeatherMap.class);
             Log.d(TAG, "JSON weather object created");
 
             return weather;
