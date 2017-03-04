@@ -11,6 +11,12 @@
         <item name="android:divider">@color/colorDivider</item>
 
         <item name="android:colorButtonNormal">@color/colorAccent</item>
+
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+    </style>
+
+    <style name="CustomPreferenceTheme" parent="PreferenceThemeOverlay">
+        <item name="android:textColorPrimary">@color/colorPrimaryDark</item>
     </style>
 
 </resources>
